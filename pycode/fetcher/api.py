@@ -19,28 +19,23 @@ class FindPlaceResponse(TrResponse):
     pass
 
 
-class GetRequestHandler:
-
-    def __init__(self, **kwargs: Any):
-        pass
-
-
-def get(url: str, path: str, params: Dict[str, Any]) -> TrResponse:
-    stringified_params = trenums.API_PARAMS_SEPARATOR.join(
-        [f'{p_name}={p_value}' for (p_name, p_value) in params.items()])
-    complete_url = f'{url}{path}{stringified_params}'
-    response = requests.get(url=complete_url)
-    return json.loads(response.text, object_hook=lambda d: TrResponse(**d))
+def get(url: str, path: str, params: Dict[str, Any], response_type) -> TrResponse:
+    complete_url = f'{url}{path}'
+    response = requests.get(url=complete_url, params=params)
+    return json.loads(response.text, object_hook=lambda d: response_type(**d)).result
 
 
 def get_place_details(url: str, path: str, params: Dict[str, Any]) -> PlaceDetailsResponse:
-    response0 = get(url, path, params)
-    response:  PlaceDetailsResponse = response0
+    stringified_fields = ','.join(params['fields'])
+    params['fields'] = stringified_fields
+    response = get(url, path, params, PlaceDetailsResponse)
     return response
 
 
 def main():
-    resp = get()
+    fields = ['name', 'rating', 'formatted_phone_number', 'address_components']
+    params = {'place_id': 'ChIJN1t_tDeuEmsRUsoyG83frY4', 'fields': fields, 'key': 'AIzaSyCiMV-wr0nGlRsg2Blz3jiPL6CKtXndJj4'}
+    resp = get_place_details(trenums.GOOGLE_MAPS_API_URL, trenums.PLACE_DETAILS_PATH, params)
 
 
 if __name__ == '__main__':
