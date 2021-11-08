@@ -5,6 +5,7 @@ import logging
 from types import SimpleNamespace
 from abc import ABC
 import json
+import os
 
 
 class TrResponse(ABC, SimpleNamespace):
@@ -21,6 +22,7 @@ class FindPlaceResponse(TrResponse):
 
 def get(url: str, path: str, params: Dict[str, Any], response_type) -> TrResponse:
     complete_url = f'{url}{path}'
+    params['key'] = os.environ['API_KEY']
     response = requests.get(url=complete_url, params=params)
     return json.loads(response.text, object_hook=lambda d: response_type(**d)).result
 
@@ -34,7 +36,7 @@ def get_place_details(url: str, path: str, params: Dict[str, Any]) -> PlaceDetai
 
 def main():
     fields = ['name', 'rating', 'formatted_phone_number', 'address_components']
-    params = {'place_id': 'ChIJN1t_tDeuEmsRUsoyG83frY4', 'fields': fields, 'key': 'AIzaSyCiMV-wr0nGlRsg2Blz3jiPL6CKtXndJj4'}
+    params = {'place_id': 'ChIJN1t_tDeuEmsRUsoyG83frY4', 'fields': fields}
     resp = get_place_details(trenums.GOOGLE_MAPS_API_URL, trenums.PLACE_DETAILS_PATH, params)
 
 
