@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 import trenums
 import requests
 import logging
@@ -24,20 +24,26 @@ def get(url: str, path: str, params: Dict[str, Any], response_type) -> TrRespons
     complete_url = f'{url}{path}'
     params['key'] = os.environ['API_KEY']
     response = requests.get(url=complete_url, params=params)
-    return json.loads(response.text, object_hook=lambda d: response_type(**d)).result
+    return json.loads(response.text, object_hook=lambda d: response_type(**d))
 
 
-def get_place_details(url: str, path: str, params: Dict[str, Any]) -> PlaceDetailsResponse:
-    stringified_fields = ','.join(params['fields'])
-    params['fields'] = stringified_fields
-    response = get(url, path, params, PlaceDetailsResponse)
+def place_details(place_id: str) -> PlaceDetailsResponse:
+    params = {'place_id': place_id, 'fields': ','.join(trenums.PLACE_DETAILS_FIELDS)}
+    response = get(trenums.GOOGLE_MAPS_API_URL, trenums.PLACE_DETAILS_PATH, params, PlaceDetailsResponse).result
     return response
 
 
-def main():
-    fields = ['name', 'rating', 'formatted_phone_number', 'address_components']
-    params = {'place_id': 'ChIJN1t_tDeuEmsRUsoyG83frY4', 'fields': fields}
-    resp = get_place_details(trenums.GOOGLE_MAPS_API_URL, trenums.PLACE_DETAILS_PATH, params)
+def find_place(name: str) -> FindPlaceResponse:
+    params = {'input': name, 'fields': ','.join(trenums.FIND_PLACE_FIELDS), 'inputtype': 'textquery'}
+    response = get(trenums.GOOGLE_MAPS_API_URL, trenums.FIND_PLACE_PATH, params, FindPlaceResponse)
+    return response
+
+
+# def main():
+#     resp = place_details(place_id='ChIJN1t_tDeuEmsRUsoyG83frY4')
+#     print('sfsa')
+#     resp = find_place(name='Museum of Contemporary Art Australia')
+#     print('sfsa')
 
 
 if __name__ == '__main__':
