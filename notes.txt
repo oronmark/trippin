@@ -1,0 +1,9 @@
+## to install psycopg2 on windows
+pip install pipwin
+pipwin install psycopg2
+
+go to c drive:
+cd /mnt/c/
+
+## spin up stack
+sudo docker-compose -f stack.yml up -d
