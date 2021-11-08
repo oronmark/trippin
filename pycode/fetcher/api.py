@@ -39,11 +39,11 @@ def find_place(name: str) -> FindPlaceResponse:
     return response
 
 
-# def main():
-#     resp = place_details(place_id='ChIJN1t_tDeuEmsRUsoyG83frY4')
-#     print('sfsa')
-#     resp = find_place(name='Museum of Contemporary Art Australia')
-#     print('sfsa')
+def main():
+    resp = place_details(place_id='ChIJN1t_tDeuEmsRUsoyG83frY4')
+    print('sfsa')
+    resp = find_place(name='Museum of Contemporary Art Australia')
+    print('sfsa')
 
 
 if __name__ == '__main__':
