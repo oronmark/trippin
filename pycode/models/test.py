@@ -18,6 +18,7 @@ class Location(BaseModel):
 
 
 # add activity, theme (specific activity like harry potter)
+# add places to work
 class Interest(BaseModel):
     class Aspect(models.TextChoices):
         SKI = 'SKI', _('Ski')
