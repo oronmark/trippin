@@ -1,5 +1,6 @@
+from importlib.resources import _
+
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 
 class BaseModel(models.Model):
@@ -39,12 +40,12 @@ class Interest(BaseModel):
 
 
 class Route(BaseModel):
-    from_location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False)
-    to_location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False)
+    from_location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='from_location')
+    to_location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='to_locations')
     car = models.FloatField()
     train = models.FloatField()
     bus = models.FloatField()
-    walk = models.FloatField()
+    walks = models.FloatField()
 
     class Meta:
         unique_together = ('from_location', 'to_location')

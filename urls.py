@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from trippin.pycode.views import OronView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('oron/', OronView.as_view()),
 ]

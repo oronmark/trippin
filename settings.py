@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'trippin.pycode.urls'
+ROOT_URLCONF = 'trippin.urls'
 
 TEMPLATES = [
     {

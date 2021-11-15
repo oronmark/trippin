@@ -7,3 +7,6 @@ cd /mnt/c/
 
 ## spin up stack
 sudo docker-compose -f stack.yml up -d
+
+install req:
+pip install -r requirements.txt
