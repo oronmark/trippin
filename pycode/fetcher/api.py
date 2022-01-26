@@ -8,6 +8,7 @@ import json
 import os
 
 
+
 class TrResponse(ABC, SimpleNamespace):
     pass
 
@@ -37,14 +38,3 @@ def find_place(name: str) -> FindPlaceResponse:
     params = {'input': name, 'fields': ','.join(trenums.FIND_PLACE_FIELDS), 'inputtype': 'textquery'}
     response = get(trenums.GOOGLE_MAPS_API_URL, trenums.FIND_PLACE_PATH, params, FindPlaceResponse)
     return response
-
-
-def main():
-    resp = place_details(place_id='ChIJN1t_tDeuEmsRUsoyG83frY4')
-    print('sfsa')
-    resp = find_place(name='Museum of Contemporary Art Australia')
-    print('sfsa')
-
-
-if __name__ == '__main__':
-    main()
