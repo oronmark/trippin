@@ -46,13 +46,13 @@ class Interest(BaseModel):
 #consider converting to symetrical model (loc1, loc2 = loc2,loc1)
 # not the actual rout , rather the possibility of traveling between 2 locations and in what ways
 class Route(BaseModel):
-    from_location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='from_location')
-    to_location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='to_locations')
+    location_0 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_0')
+    location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
     car = models.FloatField()
     train = models.FloatField()
     bus = models.FloatField()
     walk = models.FloatField()
 
     class Meta:
-        unique_together = ('from_location', 'to_location')
+        unique_together = ('location_0', 'location_1')
 
