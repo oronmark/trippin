@@ -1,12 +1,10 @@
-from typing import Any, Dict, List
-import trenums
+from typing import Any, Dict
+from pycode import trenums
 import requests
-import logging
 from types import SimpleNamespace
 from abc import ABC
 import json
 import os
-
 
 
 class TrResponse(ABC, SimpleNamespace):

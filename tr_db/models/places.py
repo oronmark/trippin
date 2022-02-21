@@ -17,13 +17,14 @@ class Location(BaseModel):
     lat = models.FloatField(null=False)
     country = models.CharField(null=False, max_length=2)
 
+    # TODO: add unique key
     # class Meta:
     #     unique_together = 'place_id'
 
 
-# add activity, theme (specific activity like harry potter)
-# add places to work
-# extend dates to a series of dates
+# TODO: add activity, theme (specific activity like harry potter)
+# TODO: add places to work
+# TODO: extend dates to a series of dates and seasons
 class Interest(BaseModel):
     class Aspect(models.TextChoices):
         SKI = 'SKI', _('Ski')
@@ -43,16 +44,35 @@ class Interest(BaseModel):
     end_date = models.DateField(null=False)
 
 
-#consider converting to symetrical model (loc1, loc2 = loc2,loc1)
-# not the actual rout , rather the possibility of traveling between 2 locations and in what ways
+# TODO: consider converting to symetrical model (loc1, loc2 = loc2,loc1)
+# TODO: what should a rout stand for ? the time it takes to get from  point a to point b? for poc yes
+# TODO: add mixed transportation type (i.e driving and transit)
 class Route(BaseModel):
     location_0 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_0')
     location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
-    car = models.FloatField()
-    train = models.FloatField()
-    bus = models.FloatField()
-    walk = models.FloatField()
 
     class Meta:
         unique_together = ('location_0', 'location_1')
 
+
+class TransportationType(BaseModel):
+    distance = models.IntegerField(null=True)
+    duration = models.IntegerField(null=True)
+    legs = models.IntegerField(null=True)
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='routes')
+
+    class Meta:
+        abstract = True
+
+
+class DriveType(TransportationType):
+    pass
+
+
+# TODO: add type of transit (bus, boat etc)
+class TransitType(TransportationType):
+    pass
+
+
+class FlightType(TransportationType):
+    pass
