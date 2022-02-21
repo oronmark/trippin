@@ -8,6 +8,7 @@ django.setup()
 from trippin import tr_db
 from trippin.tr_db import Location, Route
 import datetime
+from routes.engine import RoutesEngine
 
 
 # # assumption, this location has no routes at all
@@ -21,17 +22,24 @@ import datetime
 # use directions for how to get from point a to point b
 # use distance matrix to eliminate places where you cant go by road
 # check avg travel time with transit and driving
+# if there are no waypoints in the directions request there will be only 1 leg in the route
+# there can be several routes in the result, for now i will take the first one
 def main():
     import googlemaps
     from datetime import datetime
     import os
 
+    thessaloniki = tr_db.Location(place_id='ChIJ7eAoFPQ4qBQRqXTVuBXnugk', lng=22.9900712, lat=40.6560448, country='GR',
+                            name='Thessaloniki')
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    routes_engine = RoutesEngine(gmaps_client=gmaps, amadeus_client=None)
+    results = routes_engine.create_routes(thessaloniki)
+    print('bla')
 
-    directions_result = gmaps.directions((37.9838096, 23.7275388), (40.1029473, 22.5026117), mode='driving')
-    # directions_result = gmaps.directions('afula', 'new york', mode='transit')
+    # directions_result = gmaps.directions((37.9838096, 23.7275388), (40.1029473, 22.5026117), mode='driving')
+   # directions_result = gmaps.directions('afula', 'eilat', mode='driving', waypoints=['herzliya', 'haifa'])
+  #  directions_result = gmaps.directions('afula', 'new york', mode='transit')
   #  directions_result = gmaps.directions('athens', 'litochoro', mode='driving')
-    print('done')
 
     # from amadeus import Client, ResponseError
     #
