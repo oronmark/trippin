@@ -29,35 +29,36 @@ def main():
     from datetime import datetime
     import os
 
-    thessaloniki = tr_db.Location(place_id='ChIJ7eAoFPQ4qBQRqXTVuBXnugk', lng=22.9900712, lat=40.6560448, country='GR',
-                            name='Thessaloniki')
-    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    routes_engine = RoutesEngine(gmaps_client=gmaps, amadeus_client=None)
-    results = routes_engine.create_routes(thessaloniki)
-    print('bla')
+    # thessaloniki = tr_db.Location(place_id='ChIJ7eAoFPQ4qBQRqXTVuBXnugk', lng=22.9900712, lat=40.6560448, country='GR',
+    #                         name='Thessaloniki')
+    # gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    # routes_engine = RoutesEngine(gmaps_client=gmaps, amadeus_client=None)
+    # results = routes_engine.create_routes(thessaloniki)
+    # print('bla')
 
     # directions_result = gmaps.directions((37.9838096, 23.7275388), (40.1029473, 22.5026117), mode='driving')
    # directions_result = gmaps.directions('afula', 'eilat', mode='driving', waypoints=['herzliya', 'haifa'])
   #  directions_result = gmaps.directions('afula', 'new york', mode='transit')
   #  directions_result = gmaps.directions('athens', 'litochoro', mode='driving')
 
-    # from amadeus import Client, ResponseError
-    #
-    # amadeus = Client(
-    #     client_id=os.environ['AMADEUS_API_KEY'],
-    #     client_secret=os.environ['AMADEUS_API_SECRET'],
-    #     hostname='test'
-    # )
-    #
-    # try:
-    #     response = amadeus.shopping.flight_offers_search.get(
-    #         originLocationCode='MAD',
-    #         destinationLocationCode='ATH',
-    #         departureDate='2022-06-01',
-    #         adults=1)
-    #     print(response.data)
-    # except ResponseError as error:
-    #     print(error)
+    from amadeus import Client, ResponseError
+
+    amadeus = Client(
+        client_id=os.environ['AMADEUS_API_KEY'],
+        client_secret=os.environ['AMADEUS_API_SECRET'],
+        hostname='test'
+    )
+
+    # amadeus is between 2 airports
+    try:
+        response = amadeus.shopping.flight_offers_search.get(
+            originLocationCode='MAD',
+            destinationLocationCode='ATH',
+            departureDate='2022-06-01',
+            adults=1)
+        print(response.data)
+    except ResponseError as error:
+        print(error)
 
     # tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999, country='IL',
     #                         name='Tel-aviv')

@@ -1,3 +1,4 @@
+from enum import Enum
 from importlib.resources import _
 
 from django.db import models
@@ -56,6 +57,14 @@ class Route(BaseModel):
 
 
 class TransportationType(BaseModel):
+    class Type(Enum):
+        DRIVING = 'driving',
+        TRANSIT = 'transit',
+        FLIGHT = 'flight'
+
+        def get_string_value(self):
+            return self.value[0]
+
     distance = models.IntegerField(null=True)
     duration = models.IntegerField(null=True)
     legs = models.IntegerField(null=True)
