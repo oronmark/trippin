@@ -85,3 +85,12 @@ class TransitType(TransportationType):
 
 class FlightType(TransportationType):
     pass
+
+
+class Airport(BaseModel):
+    place_id = models.CharField(max_length=255, null=True)
+    lng = models.FloatField(null=False)
+    lat = models.FloatField(null=False)
+    country = models.CharField(null=False, max_length=2)
+    iata
+

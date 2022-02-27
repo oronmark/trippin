@@ -1,12 +1,3 @@
-from enum import Enum, auto
-
-
-class TransportationType(Enum):
-    DRIVING = 'driving',
-    TRANSIT = 'transit',
-    FLIGHT = 'flight'
-
-
 # TODO: move these
 GOOGLE_MAPS_API_URL = 'https://maps.googleapis.com/maps/api/'
 PLACE_DETAILS_PATH = 'place/details/json'

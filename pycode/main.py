@@ -52,8 +52,8 @@ def main():
     # amadeus is between 2 airports
     try:
         response = amadeus.shopping.flight_offers_search.get(
-            originLocationCode='MAD',
-            destinationLocationCode='ATH',
+            originLocationCode='TLV',
+            destinationLocationCode='NYC',
             departureDate='2022-06-01',
             adults=1)
         print(response.data)
