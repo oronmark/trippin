@@ -22,7 +22,7 @@ def read_from_csv_dicts(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) 
         header = next(reader)
         for row in reader:
             if row:
-                dictified_row = {k: v for k in header for v in row}
+                dictified_row = {header[i]: row[i] for i in range(len(header))}
                 data.append(dictified_row)
         return data
 
