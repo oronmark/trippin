@@ -1,5 +1,4 @@
 from typing import Any, Dict
-from pycode import trenums
 import requests
 from types import SimpleNamespace
 from abc import ABC

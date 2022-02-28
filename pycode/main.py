@@ -11,10 +11,11 @@ import datetime
 from routes.engine import RoutesEngine
 
 
-# # assumption, this location has no routes at all
-# def create_location_routs(location: Location) -> List[Route]:
+# open questions
+# how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
+# how can i mark a location as a reasonable place to reach an airport from
 
-
+# TODO
 # insert place to db with hard coded attributes ?
 # manually insert places and aspects
 # manually insert aspect to each location
@@ -24,6 +25,7 @@ from routes.engine import RoutesEngine
 # check avg travel time with transit and driving
 # if there are no waypoints in the directions request there will be only 1 leg in the route
 # there can be several routes in the result, for now i will take the first one
+# change lng and lat for location to somthing more general
 def main():
     import googlemaps
     from datetime import datetime
