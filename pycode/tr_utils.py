@@ -31,3 +31,10 @@ def write_to_csv(path: Path, data: List[List[Any]], encoding: Optional[str] = DE
     with open(path, 'w+', newline='', encoding=encoding) as file:
         write = csv.writer(file)
         write.writerows(data)
+
+
+def convert_dict_to_dataclass(data: Dict[Any, Any], class_type):  # will work only for dataclass with default values
+    obj = class_type()
+    for field in list(class_type.__dataclass_fields__.keys()):
+        setattr(obj, field, data.get(field, None))
+    return obj
