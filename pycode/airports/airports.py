@@ -41,11 +41,16 @@ class AirportsDAO:
         return read_from_csv_dicts(self._path)
 
     def _create_airports(self) -> List[Airport]:
+
+        def _convert_coordinates_to_float(a: Airport) -> Airport:
+            a.latitude_deg = float(a.latitude_deg)
+            a.longitude_deg = float(a.longitude_deg)
+            return a
+
         airports = []
         for airport_dict in self._load_data():
-            airport: Airport = convert_dict_to_dataclass(airport_dict, Airport)
-            airport.latitude_deg = float(airport.latitude_deg)
-            airport.longitude_deg = float(airport.longitude_deg)
+            airport: Airport = convert_dict_to_dataclass(airport_dict, Airport,
+                                                         values_converter=_convert_coordinates_to_float)
             airports.append(airport)
 
         return airports
@@ -56,11 +61,11 @@ class AirportsDAO:
     def get_airport_by_coordinates(self, lat: float, lng: float) -> Optional[Airport]:
         return self._airport_by_coordinates.get((lat, lng), None)
 
+
 # def main():
 #     airports_dao = AirportsDAO()
 #     ap = airports_dao.get_airport_by_coordinates(lat=32.01139831542969, lng=34.88669967651367)
 #     print('bla')
-#
 #
 #
 # if __name__ == '__main__':

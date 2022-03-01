@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Optional, Dict
+from typing import Any, List, Optional, Dict, Callable
 import csv
 
 DEFAULT_ENCODING = 'UTF-8'
@@ -33,8 +33,11 @@ def write_to_csv(path: Path, data: List[List[Any]], encoding: Optional[str] = DE
         write.writerows(data)
 
 
-def convert_dict_to_dataclass(data: Dict[Any, Any], class_type):  # will work only for dataclass with default values
+def convert_dict_to_dataclass(data: Dict[Any, Any], class_type, values_converter: Optional[Callable[[Any], Any]] = None):
+    # will work only for dataclass with default values
     obj = class_type()
     for field in list(class_type.__dataclass_fields__.keys()):
         setattr(obj, field, data.get(field, None))
+    if values_converter:
+        obj = values_converter(obj)
     return obj
