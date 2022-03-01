@@ -1,8 +1,9 @@
+import math
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
 import os
 from pycode.tr_enums import *
-from pycode.tr_utils import read_from_csv_dicts, convert_dict_to_dataclass
+from pycode.tr_utils import read_from_csv_dicts, convert_dict_to_dataclass, calculate_distance_on_map
 from pycode.tr_path import tr_path
 from dataclasses import dataclass
 
@@ -24,7 +25,10 @@ class Airport:
 
 # TODO add error handling
 # TODO normalize filed names
+# TODO check if getting closest airport by distance is a valid choice
+# TODO move max_distance const to somewhere else
 class AirportsDAO:
+    MAX_AIRPORT_DISTANCE = 200
 
     def __init__(self, path: Optional[Path] = None):
         self._path = self._create_path(path)
@@ -61,12 +65,25 @@ class AirportsDAO:
     def get_airport_by_coordinates(self, lat: float, lng: float) -> Optional[Airport]:
         return self._airport_by_coordinates.get((lat, lng), None)
 
+    def get_closest_airports(self, lat: float, lng: float) -> List[Airport]:
+        closest_airports = []
+        for airport in self._airports:
+            dist = calculate_distance_on_map((lat, lng), (airport.latitude_deg, airport.longitude_deg))
+            if dist < AirportsDAO.MAX_AIRPORT_DISTANCE:
+                closest_airports.append(airport)
+
+        return closest_airports
+
 
 # def main():
 #     airports_dao = AirportsDAO()
-#     ap = airports_dao.get_airport_by_coordinates(lat=32.01139831542969, lng=34.88669967651367)
-#     print('bla')
+#     import time
+#     start = time.time()
+#     closest_airports = airports_dao.get_closest_airports(lat=32.6104931, lng=35.287922)
+#     end = time.time()
+#     print(end-start)
 #
 #
 # if __name__ == '__main__':
 #     main()
+

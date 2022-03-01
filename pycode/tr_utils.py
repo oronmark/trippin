@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import Any, List, Optional, Dict, Callable
+from typing import Any, List, Optional, Dict, Callable, Tuple
 import csv
+from math import sin, cos, sqrt, atan2, radians
 
 DEFAULT_ENCODING = 'UTF-8'
 
@@ -41,3 +42,20 @@ def convert_dict_to_dataclass(data: Dict[Any, Any], class_type, values_converter
     if values_converter:
         obj = values_converter(obj)
     return obj
+
+
+def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
+    # this function calculates the distance between 2 points on a map in km
+    # this was implemented explicitly because using the geopy.distance function was very slow
+    r = 6373.0
+    lat1 = radians(p0[0])
+    lon1 = radians(p0[1])
+    lat2 = radians(p1[0])
+    lon2 = radians(p1[1])
+    d_lon = lon2 - lon1
+    d_lat = lat2 - lat1
+    a = sin(d_lat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(d_lon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    distance = r * c
+
+    return distance
