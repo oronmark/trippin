@@ -66,24 +66,17 @@ class AirportsDAO:
         return self._airport_by_coordinates.get((lat, lng), None)
 
     def get_closest_airports(self, lat: float, lng: float) -> List[Airport]:
-        closest_airports = []
-        for airport in self._airports:
-            dist = calculate_distance_on_map((lat, lng), (airport.latitude_deg, airport.longitude_deg))
-            if dist < AirportsDAO.MAX_AIRPORT_DISTANCE:
-                closest_airports.append(airport)
+        return [airport for airport in self._airports if calculate_distance_on_map((lat, lng), (
+            airport.latitude_deg, airport.longitude_deg)) < AirportsDAO.MAX_AIRPORT_DISTANCE]
 
-        return closest_airports
+def main():
+    airports_dao = AirportsDAO()
+    import time
+    start = time.time()
+    closest_airports = airports_dao.get_closest_airports(lat=32.6104931, lng=35.287922)
+    end = time.time()
+    print(end-start)
 
 
-# def main():
-#     airports_dao = AirportsDAO()
-#     import time
-#     start = time.time()
-#     closest_airports = airports_dao.get_closest_airports(lat=32.6104931, lng=35.287922)
-#     end = time.time()
-#     print(end-start)
-#
-#
-# if __name__ == '__main__':
-#     main()
-
+if __name__ == '__main__':
+    main()
