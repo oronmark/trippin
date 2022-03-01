@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Tuple
 import os
 from pycode.tr_enums import *
 from pycode.tr_utils import read_from_csv_dicts, convert_dict_to_dataclass
@@ -22,39 +22,43 @@ class Airport:
     iata_code: str = None
 
 
-# TODO check if static method is needed
 # TODO add error handling
-# TODO convert to private
 # TODO normalize filed names
 class AirportsDAO:
 
     def __init__(self, path: Optional[Path] = None):
-        self.path = self._create_path(path)
-        self.airports = self.create_airports()
-        self.airport_by_iata = None
+        self._path = self._create_path(path)
+        self._airports: List[Airport] = self._create_airports()
+        self._airport_by_coordinates = self._create_airports_by_coordinates()
 
     @staticmethod
-    def _create_path(path: Optional[Path] = None):
+    def _create_path(path: Optional[Path] = None) -> Path:
         if path:
             return path
-        return os.path.join(tr_path.get_resources_path(), AIRPORT_DATA_PATH, AIRPORT_DATA_FILE_NAME)
+        return Path(os.path.join(tr_path.get_resources_path(), AIRPORT_DATA_PATH, AIRPORT_DATA_FILE_NAME))
 
-    def _load_data(self):
-        data: List[Dict[Any]] = read_from_csv_dicts(self.path)
-        return data
+    def _load_data(self) -> List[Dict[str, Any]]:
+        return read_from_csv_dicts(self._path)
 
-    def create_airports(self):
+    def _create_airports(self) -> List[Airport]:
         airports = []
         for airport_dict in self._load_data():
-            airports.append(convert_dict_to_dataclass(airport_dict, Airport))
+            airport: Airport = convert_dict_to_dataclass(airport_dict, Airport)
+            airport.latitude_deg = float(airport.latitude_deg)
+            airport.longitude_deg = float(airport.longitude_deg)
+            airports.append(airport)
 
         return airports
 
+    def _create_airports_by_coordinates(self) -> Dict[Tuple[float, float], Airport]:
+        return {(a.latitude_deg, a.longitude_deg): a for a in self._airports}
 
+    def get_airport_by_coordinates(self, lat: float, lng: float) -> Optional[Airport]:
+        return self._airport_by_coordinates.get((lat, lng), None)
 
 # def main():
 #     airports_dao = AirportsDAO()
-#     data = airports_dao.get_data()
+#     ap = airports_dao.get_airport_by_coordinates(lat=32.01139831542969, lng=34.88669967651367)
 #     print('bla')
 #
 #
