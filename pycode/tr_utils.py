@@ -16,7 +16,7 @@ def read_from_csv_to_lists(path: Path, encoding: Optional[str] = DEFAULT_ENCODIN
         return data
 
 
-def read_from_csv_dicts(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[Dict[str, Any]]:
+def read_from_csv_to_dicts(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[Dict[str, Any]]:
     data = []
     with open(path, newline='', encoding=encoding) as file:
         reader = csv.reader(file)
@@ -28,7 +28,8 @@ def read_from_csv_dicts(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) 
         return data
 
 
-def write_to_csv(path: Path, data: List[List[Any]], encoding: Optional[str] = DEFAULT_ENCODING):
+# TODO add option to write from dicts
+def write_to_csv_from_lists(path: Path, data: List[List[Any]], encoding: Optional[str] = DEFAULT_ENCODING):
     with open(path, 'w+', newline='', encoding=encoding) as file:
         write = csv.writer(file)
         write.writerows(data)

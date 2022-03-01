@@ -1,9 +1,8 @@
-import math
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
 import os
 from pycode.tr_enums import *
-from pycode.tr_utils import read_from_csv_dicts, convert_dict_to_dataclass, calculate_distance_on_map
+from pycode.tr_utils import read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map
 from pycode.tr_path import tr_path
 from dataclasses import dataclass
 
@@ -42,7 +41,7 @@ class AirportsDAO:
         return Path(os.path.join(tr_path.get_resources_path(), AIRPORT_DATA_PATH, AIRPORT_DATA_FILE_NAME))
 
     def _load_data(self) -> List[Dict[str, Any]]:
-        return read_from_csv_dicts(self._path)
+        return read_from_csv_to_dicts(self._path)
 
     def _create_airports(self) -> List[Airport]:
 
