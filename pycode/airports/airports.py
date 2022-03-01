@@ -69,6 +69,7 @@ class AirportsDAO:
         return [airport for airport in self._airports if calculate_distance_on_map((lat, lng), (
             airport.latitude_deg, airport.longitude_deg)) < AirportsDAO.MAX_AIRPORT_DISTANCE]
 
+
 def main():
     airports_dao = AirportsDAO()
     import time
