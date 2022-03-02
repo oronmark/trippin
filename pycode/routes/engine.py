@@ -46,6 +46,9 @@ class RoutesEngine:
         pass
 
     # TODO: implement, for start implement for tlv->new york
+    # find closest airport for each location
+    # check from closes to furthers airport if the flight is possible
+    # add sub route to airport?
     def creat_route_types_flight(self, route: Route) -> List[TransportationType]:
         pass
 

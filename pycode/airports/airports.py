@@ -52,11 +52,9 @@ class AirportsDAO:
             a.longitude_deg = float(a.longitude_deg)
             return a
 
-        airports = []
-        for airport_dict in self._load_data():
-            airport: Airport = convert_dict_to_dataclass(airport_dict, Airport,
-                                                         values_converter=_convert_coordinates_to_float)
-            airports.append(airport)
+        airport_data = self._load_data()
+        airports = [convert_dict_to_dataclass(a, Airport,
+                                              values_converter=_convert_coordinates_to_float) for a in airport_data]
 
         return airports
 
