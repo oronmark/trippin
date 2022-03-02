@@ -36,6 +36,7 @@ class AirportData:
 # TODO move max_distance const to somewhere else
 # TODO add iterative check in case there are no close airports AIRPORT_DISTANCE_INCREMENTS
 # TODO check if airport by coordinates is needed
+# TODO refactor init
 class AirportsDAO:
     MAX_AIRPORT_DISTANCE = 200
     DEFAULT_BATCH_SIZE = 500
