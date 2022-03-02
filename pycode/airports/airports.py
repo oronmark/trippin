@@ -26,6 +26,8 @@ class Airport:
 # TODO normalize filed names
 # TODO check if getting closest airport by distance is a valid choice
 # TODO move max_distance const to somewhere else
+# TODO add iterative check in case there are no close airports AIRPORT_DISTANCE_INCREMENTS
+# TODO check if airport by coordinates is needed
 class AirportsDAO:
     MAX_AIRPORT_DISTANCE = 200
 
