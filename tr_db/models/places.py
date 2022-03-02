@@ -13,14 +13,10 @@ class BaseModel(models.Model):
 
 # add fields- country, region (perhaps enrich with maps api)
 class Location(BaseModel):
-    place_id = models.CharField(max_length=255, null=True)
+    place_id = models.CharField(primary_key=True, max_length=255, null=True)
     lng = models.FloatField(null=False)
     lat = models.FloatField(null=False)
     country = models.CharField(null=False, max_length=2)
-
-    # TODO: add unique key
-    # class Meta:
-    #     unique_together = 'place_id'
 
 
 # TODO: add activity, theme (specific activity like harry potter)
@@ -88,9 +84,24 @@ class FlightType(TransportationType):
 
 
 class Airport(BaseModel):
-    place_id = models.CharField(max_length=255, null=True)
-    lng = models.FloatField(null=False)
-    lat = models.FloatField(null=False)
-    country = models.CharField(null=False, max_length=2)
-    iata
+    id = models.CharField(primary_key=True, max_length=255, null=True)
+    type = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=255, null=True)
+    latitude_deg = models.FloatField(null=False)
+    longitude_deg = models.FloatField(null=False)
+    continent = models.CharField(max_length=2, null=True)
+    iso_region = models.CharField(max_length=255, null=True)
+    iso_country = models.CharField(max_length=2, null=True)
+    municipality = models.CharField(max_length=255, null=True)
+    gps_code = models.CharField(max_length=5, null=True)
+    iata_code = models.CharField(max_length=3, null=True)
+
+
+# TODO consider unifying with route model
+class AirportRoute(BaseModel):
+    airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
+    airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
+
+    class Meta:
+        unique_together = ('airport_0', 'airport_1')
 
