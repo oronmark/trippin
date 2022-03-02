@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from typing import Any, List
-from pycode.tr_utils import read_from_csv_to_lists, write_to_csv
+from pycode.tr_utils import read_from_csv_to_lists, write_to_csv_from_lists
 
 IATA_INDEX = 13
 SCHEDULED_SERVICE_INDEX = 11
@@ -36,7 +36,7 @@ def main():
     filtered_data = filter_list_by_condition(data, lambda r: r[SCHEDULED_SERVICE_INDEX] != 'no')
 
     output_path = path if args.override else Path(args.output_path)
-    write_to_csv(output_path, filtered_data)
+    write_to_csv_from_lists(output_path, filtered_data)
 
 
 if __name__ == '__main__':

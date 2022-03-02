@@ -3,15 +3,17 @@ import amadeus
 import googlemaps
 from trippin import tr_db
 from trippin.tr_db import Location, Route, TransportationType
+from ..airports.airports import AirportsDAO
 
 
 # TODO: add error handling
 # TODO: remove optional
 # TODO: build rout for flight and check if mid routes will work
 class RoutesEngine:
-    def __init__(self, gmaps_client: googlemaps.Client, amadeus_client: Optional[amadeus.Client] = None):
+    def __init__(self, gmaps_client: googlemaps.Client,  airports_dao: AirportsDAO, amadeus_client: Optional[amadeus.Client] = None):
         self.gmaps_client = gmaps_client
         self.amadeuse_client = amadeus_client
+        self.airports_dao = airports_dao
 
     # TODO: implement
     def creat_route_types_amadeus(self, route: Route) -> List[TransportationType]:
@@ -63,3 +65,9 @@ class RoutesEngine:
             route_types.append(self.creat_route_types_transit(new_route))
 
         return routes, route_types
+
+
+
+    def link_airports(self):
+        SUBSET_AIRPORTS_FOR_TEST = ['TLV', 'JFK', 'EWR', ]
+
