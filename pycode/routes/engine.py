@@ -1,16 +1,27 @@
 from typing import List, Optional
 import amadeus
 import googlemaps
+from amadeus import Client, ResponseError
+import os
+import django
+import logging
+logging.basicConfig(level=logging.INFO)
+django.setup()
+
 from trippin import tr_db
-from trippin.tr_db import Location, Route, TransportationType
-from ..airports.airports import AirportsDAO
+from trippin.tr_db import Location, Route, TransportationType, Airport, AirportRoute
+from pycode.airports.airports import AirportsDAO
+from django.db import transaction
 
 
-# TODO: add error handling
+# TODO: add error handling, logging and costume exceptions
 # TODO: remove optional
 # TODO: build rout for flight and check if mid routes will work
+# TODO: unify all transactions to a single function
+# TODO: add tracking bar
 class RoutesEngine:
-    def __init__(self, gmaps_client: googlemaps.Client,  airports_dao: AirportsDAO, amadeus_client: Optional[amadeus.Client] = None):
+    def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO,
+                 amadeus_client: Optional[amadeus.Client] = None):
         self.gmaps_client = gmaps_client
         self.amadeuse_client = amadeus_client
         self.airports_dao = airports_dao
@@ -66,8 +77,52 @@ class RoutesEngine:
 
         return routes, route_types
 
+    def get_destinations_iata_code(self, airport: Airport) -> List[str]:
+        try:
+            response = self.amadeuse_client.airport.direct_destinations.get(departureAirportCode='TLV')
+            return [a['iataCode'] for a in response.data]
+        except ResponseError as error:
+            raise Exception(
+                f'An error occurred while trying to fetch all linked airports, airport_code: ${airport.iata_code}, '
+                f'error: ${error}'
+            )
+
+    # TODO: not efficient, refactor
+    def create_airport_routes(self, airport: Airport):
+        logging.info(f'creating airport routes for ${airport.iata_code}')
+        airports_data = []
+        for d in self.get_destinations_iata_code(airport):
+            other_airport_code = self.airports_dao.get_airport_by_iata_code(d)
+            if other_airport_code:
+                airports_data.append(other_airport_code)
+
+        other_airports = Airport.objects.filter(iata_code__in=[code.iata_code for code in airports_data])
+        routes = [AirportRoute(airport_0=airport, airport_1=a) for a in other_airports.all()]
+
+        with transaction.atomic():
+            tr_db.AirportRoute.objects.bulk_create(objs=routes)
 
 
-    def link_airports(self):
-        SUBSET_AIRPORTS_FOR_TEST = ['TLV', 'JFK', 'EWR', ]
+def main():
+    airport_codes_subset_for_test = ['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG']
+   # airport_codes_subset_for_test = ['TLV']
+    amadeus = Client(
+        client_id=os.environ['AMADEUS_API_KEY'],
+        client_secret=os.environ['AMADEUS_API_SECRET'],
+        hostname='test'
+    )
+    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    airports_dao = AirportsDAO()
+    routes_engine = RoutesEngine(gmaps_client=gmaps, amadeus_client=amadeus, airports_dao=airports_dao)
 
+
+    # attempt to add airports routs for test airports
+    for code in airport_codes_subset_for_test:
+        airport = tr_db.Airport.objects.filter(iata_code=code).get()
+        routes_engine.create_airport_routes(airport)
+
+    print('done')
+
+
+if __name__ == '__main__':
+    main()

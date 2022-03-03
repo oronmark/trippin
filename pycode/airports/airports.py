@@ -41,12 +41,14 @@ class AirportData:
 class AirportsDAO:
     MAX_AIRPORT_DISTANCE = 200
     DEFAULT_BATCH_SIZE = 500
+    AirportType = AirportData | tr_db.Airport
 
     def __init__(self, path: Optional[Path] = None):
         self._path = self._create_path(path)
         airports_data = self._load_data(self._path)
         self._airports: List[AirportData] = self._create_airports(airports_data)
         self._airport_by_coordinates = self._create_airports_by_coordinates()
+        self.airports_by_iata_code = self._create_airports_by_iata_code()
 
     @staticmethod
     def _create_path(path: Optional[Path] = None) -> Path:
@@ -74,12 +76,18 @@ class AirportsDAO:
     def _create_airports_by_coordinates(self) -> Dict[Tuple[float, float], AirportData]:
         return {(a.latitude_deg, a.longitude_deg): a for a in self._airports}
 
+    def _create_airports_by_iata_code(self) -> Dict[str, AirportData]:
+        return {a.iata_code: a for a in self._airports}
+
     def get_airport_by_coordinates(self, lat: float, lng: float) -> Optional[AirportData]:
         return self._airport_by_coordinates.get((lat, lng), None)
 
     def get_closest_airports(self, lat: float, lng: float) -> List[AirportData]:
         return [airport for airport in self._airports if calculate_distance_on_map((lat, lng), (
             airport.latitude_deg, airport.longitude_deg)) < AirportsDAO.MAX_AIRPORT_DISTANCE]
+
+    def get_airport_by_iata_code(self, iata_code: str) -> Optional[AirportType]:
+        return self.airports_by_iata_code.get(iata_code, None)
 
     @classmethod
     def dump_csv_to_db(cls, path: Optional[Path] = None):
@@ -95,6 +103,8 @@ class AirportsDAO:
 
         with transaction.atomic():
             tr_db.Airport.objects.bulk_create(objs=airports, batch_size=cls.DEFAULT_BATCH_SIZE)
+
+
 
 
 # def main():

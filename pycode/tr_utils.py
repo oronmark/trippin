@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Dict, Callable, Tuple
 import csv
 from math import sin, cos, sqrt, atan2, radians
+from django.db import models
 
 DEFAULT_ENCODING = 'UTF-8'
 

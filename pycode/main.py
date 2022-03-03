@@ -51,16 +51,6 @@ def main():
         hostname='test'
     )
 
-    # amadeus is between 2 airports
-    try:
-        response = amadeus.shopping.flight_offers_search.get(
-            originLocationCode='TLV',
-            destinationLocationCode='NYC',
-            departureDate='2022-06-01',
-            adults=1)
-        print(response.data)
-    except ResponseError as error:
-        print(error)
 
     # tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999, country='IL',
     #                         name='Tel-aviv')
