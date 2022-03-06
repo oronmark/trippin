@@ -2,12 +2,6 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
-
-# # TODO remove
-# import django
-#
-# django.setup()
-
 from django.db import transaction
 from pycode.tr_enums import *
 from pycode.tr_path import tr_path
@@ -30,6 +24,12 @@ class AirportData:
     iata_code: str = None
 
 
+@dataclass
+class AirportDataDistance:
+    airport_data: AirportData
+    distance: float
+
+
 # TODO add error handling
 # TODO normalize filed names
 # TODO check if getting closest airport by distance is a valid choice
@@ -38,9 +38,8 @@ class AirportData:
 # TODO check if airport by coordinates is needed
 # TODO refactor init
 # TODO convert to singleton
+# TODO divide to levels: continent, region etc for faster results in get_closest_airports
 class AirportsDAO:
-    MAX_AIRPORT_DISTANCE = 200
-    DEFAULT_BATCH_SIZE = 500
     AirportType = AirportData | tr_db.Airport
 
     def __init__(self, path: Optional[Path] = None):
@@ -82,9 +81,16 @@ class AirportsDAO:
     def get_airport_by_coordinates(self, lat: float, lng: float) -> Optional[AirportData]:
         return self._airport_by_coordinates.get((lat, lng), None)
 
-    def get_closest_airports(self, lat: float, lng: float) -> List[AirportData]:
-        return [airport for airport in self._airports if calculate_distance_on_map((lat, lng), (
-            airport.latitude_deg, airport.longitude_deg)) < AirportsDAO.MAX_AIRPORT_DISTANCE]
+    def get_distance_by_airport(self, lat: float, lng: float) -> List[AirportDataDistance]:
+        return [AirportDataDistance(a, calculate_distance_on_map((a.latitude_deg, a.longitude_deg), (lat, lng))) for a
+                in self._airports]
+
+    def get_distance_by_airport_for_location(self, location: tr_db.Location) -> List[AirportDataDistance]:
+        return self.get_distance_by_airport(lat=location.lat, lng=location.lng)
+
+    def get_closest_distances_by_airport(self, location: tr_db.Location, max_distance: float) -> List[
+            AirportDataDistance]:
+        return [a_d for a_d in self.get_distance_by_airport_for_location(location) if a_d.distance <= max_distance]
 
     def get_airport_by_iata_code(self, iata_code: str) -> Optional[AirportType]:
         return self.airports_by_iata_code.get(iata_code, None)
@@ -103,19 +109,3 @@ class AirportsDAO:
 
         with transaction.atomic():
             tr_db.Airport.objects.bulk_create(objs=airports, batch_size=cls.DEFAULT_BATCH_SIZE)
-
-
-
-
-# def main():
-#     airports_dao = AirportsDAO()
-#     AirportsDAO.dump_csv_to_db()
-#     import time
-#     start = time.time()
-#     closest_airports = airports_dao.get_closest_airports(lat=32.6104931, lng=35.287922)
-#     end = time.time()
-#     print(end - start)
-#
-#
-# if __name__ == '__main__':
-#     main()

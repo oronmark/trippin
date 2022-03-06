@@ -36,7 +36,8 @@ def write_to_csv_from_lists(path: Path, data: List[List[Any]], encoding: Optiona
         write.writerows(data)
 
 
-def convert_dict_to_dataclass(data: Dict[Any, Any], class_type, values_converter: Optional[Callable[[Any], Any]] = None):
+def convert_dict_to_dataclass(data: Dict[Any, Any], class_type,
+                              values_converter: Optional[Callable[[Any], Any]] = None) -> Any:
     # will work only for dataclass with default values
     obj = class_type()
     for field in list(class_type.__dataclass_fields__.keys()):
@@ -61,3 +62,4 @@ def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) 
     distance = r * c
 
     return distance
+

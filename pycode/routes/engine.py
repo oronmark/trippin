@@ -9,17 +9,21 @@ logging.basicConfig(level=logging.INFO)
 django.setup()
 
 from trippin import tr_db
-from trippin.tr_db import Location, Route, TransportationType, Airport, AirportRoute
+from trippin.tr_db import Location, Route, TransportationType, Airport, ConnectedAirports
 from pycode.airports.airports import AirportsDAO
 from django.db import transaction
 
 
 # TODO: add error handling, logging and costume exceptions
 # TODO: remove optional
-# TODO: build rout for flight and check if mid routes will work
+# TODO: build route for flight and check if mid routes will work
 # TODO: unify all transactions to a single function
 # TODO: add tracking bar
 class RoutesEngine:
+
+    MAX_AIRPORT_DISTANCE = 200
+    DEFAULT_BATCH_SIZE = 500
+
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO,
                  amadeus_client: Optional[amadeus.Client] = None):
         self.gmaps_client = gmaps_client
@@ -62,8 +66,17 @@ class RoutesEngine:
     # find closest airport for each location
     # check from closes to furthers airport if the flight is possible
     # add sub route to airport?
-    def creat_route_types_flight(self, route: Route) -> List[TransportationType]:
-        pass
+    # first, calculate route for closest airport
+    def create_route_types_flight(self, route: Route) -> List[TransportationType]:
+        closest_airports_0 = self.airports_dao.get_closest_distances_by_airport(route.location_0,
+                                                                                self.MAX_AIRPORT_DISTANCE)
+        closest_airports_1 = self.airports_dao.get_closest_distances_by_airport(route.location_1,
+                                                                                self.MAX_AIRPORT_DISTANCE)
+        closest_airport_0 = min(closest_airports_0, key=lambda a: a.distance)
+        closest_airport_1 = min(closest_airports_1, key=lambda a: a.distance)
+
+        if not closest_airports_0 or not closest_airports_1:
+            raise Exception('Could not find any airport close enough to location')
 
     def create_routes(self, new_location: Location) -> (List[Route], List[TransportationType]):
 
@@ -97,10 +110,10 @@ class RoutesEngine:
                 airports_data.append(other_airport_code)
 
         other_airports = Airport.objects.filter(iata_code__in=[code.iata_code for code in airports_data])
-        routes = [AirportRoute(airport_0=airport, airport_1=a) for a in other_airports.all()]
+        routes = [ConnectedAirports(airport_0=airport, airport_1=a) for a in other_airports.all()]
 
         with transaction.atomic():
-            tr_db.AirportRoute.objects.bulk_create(objs=routes)
+            tr_db.ConnectedAirports.objects.bulk_create(objs=routes)
 
 
 def main():

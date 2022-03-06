@@ -11,7 +11,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
-# add fields- country, region (perhaps enrich with maps api)
+# TODO: add fields- country, region (perhaps enrich with maps api)
 class Location(BaseModel):
     place_id = models.CharField(primary_key=True, max_length=255, null=True)
     lng = models.FloatField(null=False)
@@ -98,7 +98,7 @@ class Airport(BaseModel):
 
 
 # TODO consider unifying with route model
-class AirportRoute(BaseModel):
+class ConnectedAirports(BaseModel):
     airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
     airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
 

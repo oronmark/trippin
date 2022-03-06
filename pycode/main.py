@@ -79,6 +79,10 @@ def main():
     # athens_aspect_0.save()
 
 
-
+    # routes
+    # location -> location
+    # airport -> location
+    # location -> airport
+    # airport -> airport
 if __name__ == '__main__':
     main()
