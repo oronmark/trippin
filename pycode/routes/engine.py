@@ -101,7 +101,7 @@ class RoutesEngine:
             )
 
     # TODO: not efficient, refactor
-    def create_airport_routes(self, airport: Airport):
+    def create_airport_connections(self, airport: Airport):
         logging.info(f'creating airport routes for ${airport.iata_code}')
         airports_data = []
         for d in self.get_destinations_iata_code(airport):
@@ -129,10 +129,10 @@ def main():
     routes_engine = RoutesEngine(gmaps_client=gmaps, amadeus_client=amadeus, airports_dao=airports_dao)
 
 
-    # attempt to add airports routs for test airports
+    # attempt to add airports routes for test airports
     for code in airport_codes_subset_for_test:
         airport = tr_db.Airport.objects.filter(iata_code=code).get()
-        routes_engine.create_airport_routes(airport)
+        routes_engine.create_airport_connections(airport)
 
     print('done')
 
