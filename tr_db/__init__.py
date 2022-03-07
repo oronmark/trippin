@@ -1,1 +1,1 @@
-from ..tr_db.models.places import *
+from ..tr_db.models.locations import *

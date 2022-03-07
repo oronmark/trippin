@@ -39,6 +39,7 @@ class AirportDataDistance:
 # TODO refactor init
 # TODO convert to singleton
 # TODO divide to levels: continent, region etc for faster results in get_closest_airports
+# TODO load once into memory and use a cache
 class AirportsDAO:
     AirportType = AirportData | tr_db.Airport
 
