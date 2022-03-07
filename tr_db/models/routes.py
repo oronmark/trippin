@@ -1,8 +1,8 @@
 from enum import Enum
-from base_models import BaseModel
+from .base_models import BaseModel
 from django.db import models
-from locations import Location
-from airports import Airport, ConnectedAirports
+from .locations import Location
+from .airports import Airport
 
 
 # TODO: consider converting to symmetrical model (loc1, loc2 = loc2,loc1) (check if meta is working)

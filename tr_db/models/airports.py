@@ -1,4 +1,4 @@
-from base_models import BaseModel
+from .base_models import BaseModel
 from django.db import models
 
 
@@ -17,7 +17,7 @@ class Airport(BaseModel):
 
 
 # TODO consider unifying with route model
-class ConnectedAirports(BaseModel):
+class AirportConnection(BaseModel):
     airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
     airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
 

@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 django.setup()
 
 from trippin import tr_db
-from trippin.tr_db import Location, Route, Transportation, Airport, ConnectedAirports
+from trippin.tr_db import Location, Route, Transportation, Airport, AirportConnection
 from pycode.airports.airports import AirportsDAO
 from django.db import transaction
 
@@ -31,10 +31,10 @@ class RoutesEngine:
         self.airports_dao = airports_dao
 
     # TODO: implement
-    def creat_route_types_amadeus(self, route: Route) -> List[Transportation]:
+    def create_routes_amadeus(self, route: Route) -> List[Transportation]:
         pass
 
-    def creat_route_types_gmaps(self, route: Route, transportation_type: Transportation.Type) -> List[
+    def create_route_gmaps(self, route: Route, transportation_type: Transportation.Type) -> List[
         Transportation]:
 
         route_types = []
@@ -50,16 +50,16 @@ class RoutesEngine:
             route_types.append(drive_type)
         return route_types
 
-    def creat_route_types_driving(self, route: Route) -> List[Transportation]:
-        return self.creat_route_types_gmaps(route, Transportation.Type.DRIVING)
+    def create_route_option_driving(self, route: Route) -> List[Transportation]:
+        return self.create_route_gmaps(route, Transportation.Type.DRIVING)
 
     # TODO: add transit type
     # TODO: add legs count to routetype
-    def creat_route_types_transit(self, route: Route) -> List[Transportation]:
-        return self.creat_route_types_gmaps(route, Transportation.Type.TRANSIT)
+    def create_route_option_transit(self, route: Route) -> List[Transportation]:
+        return self.create_route_gmaps(route, Transportation.Type.TRANSIT)
 
     # TODO: implement
-    def create_routes_types(self, route: Route) -> List[Transportation]:
+    def create_routes_options(self, route: Route) -> List[Transportation]:
         pass
 
     # TODO: implement, for start implement for tlv->new york
@@ -67,7 +67,7 @@ class RoutesEngine:
     # check from closes to furthers airport if the flight is possible
     # add sub route to airport?
     # first, calculate route for closest airport
-    def create_route_types_flight(self, route: Route) -> List[Transportation]:
+    def create_route_option_flight(self, route: Route) -> List[Transportation]:
         closest_airports_0 = self.airports_dao.get_closest_distances_by_airport(route.location_0,
                                                                                 self.MAX_AIRPORT_DISTANCE)
         closest_airports_1 = self.airports_dao.get_closest_distances_by_airport(route.location_1,
@@ -85,8 +85,8 @@ class RoutesEngine:
         for location in Location.objects.all():
             new_route = tr_db.Route(location_0=new_location, location_1=location)
             routes.append(new_route)
-            route_types.append(self.creat_route_types_driving(new_route))
-            route_types.append(self.creat_route_types_transit(new_route))
+            route_types.append(self.create_route_option_driving(new_route))
+            route_types.append(self.create_route_option_transit(new_route))
 
         return routes, route_types
 
@@ -110,10 +110,10 @@ class RoutesEngine:
                 airports_data.append(other_airport_code)
 
         other_airports = Airport.objects.filter(iata_code__in=[code.iata_code for code in airports_data])
-        routes = [ConnectedAirports(airport_0=airport, airport_1=a) for a in other_airports.all()]
+        routes = [AirportConnection(airport_0=airport, airport_1=a) for a in other_airports.all()]
 
         with transaction.atomic():
-            tr_db.ConnectedAirports.objects.bulk_create(objs=routes)
+            tr_db.AirportConnection.objects.bulk_create(objs=routes)
 
 
 def main():
