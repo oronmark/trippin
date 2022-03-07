@@ -47,6 +47,7 @@ class RouteOption(BaseModel):
         abstract = True
 
 
+# TODO: consider adding details regarding multi leg flights
 class FlightRoute(RouteOption):
     flight_0 = models.ForeignKey(Flight, on_delete=models.CASCADE, null=False, related_name='flight_0')
     flight_1 = models.ForeignKey(Flight, on_delete=models.CASCADE, null=False, related_name='flight_1')
@@ -55,12 +56,13 @@ class FlightRoute(RouteOption):
         unique_together = [('flight_0', 'flight_1'), ('flight_1', 'flight_0')]
 
 
-# TODO: unify if possible as expand objects
+# TODO: unify if possible and expand objects
 class DriveRoute(RouteOption):
     transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
                                           related_name='transportation')
 
 
+# TODO: add type of transit and legs
 class TransitRoute(RouteOption):
     transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
                                           related_name='transportation')
