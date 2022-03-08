@@ -7,6 +7,7 @@ from pycode.tr_enums import *
 from pycode.tr_path import tr_path
 from pycode.tr_utils import read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map
 from trippin import tr_db
+from pycode.tr_utils import DEFAULT_BATCH_SIZE
 
 
 @dataclass
@@ -39,7 +40,8 @@ class AirportDataDistance:
 # TODO refactor init
 # TODO convert to singleton
 # TODO divide to levels: continent, region etc for faster results in get_closest_airports
-# TODO load once into memory and use a cache
+# TODO load once into memory and use a cache and convert to singleton
+# TODO add airport distances and flight time to db?
 class AirportsDAO:
     AirportType = AirportData | tr_db.Airport
 
@@ -90,14 +92,14 @@ class AirportsDAO:
         return self.get_distance_by_airport(lat=location.lat, lng=location.lng)
 
     def get_closest_distances_by_airport(self, location: tr_db.Location, max_distance: float) -> List[
-            AirportDataDistance]:
+        AirportDataDistance]:
         return [a_d for a_d in self.get_distance_by_airport_for_location(location) if a_d.distance <= max_distance]
 
     def get_airport_by_iata_code(self, iata_code: str) -> Optional[AirportType]:
         return self.airports_by_iata_code.get(iata_code, None)
 
     @classmethod
-    def dump_csv_to_db(cls, path: Optional[Path] = None):
+    def dump_to_db(cls, path: Optional[Path] = None):
         airports_dicts = cls._load_data(cls._create_path(path))
         airports_data = cls._create_airports(airports_dicts)
         airports = []
@@ -109,4 +111,9 @@ class AirportsDAO:
             airports.append(db_airport)
 
         with transaction.atomic():
-            tr_db.Airport.objects.bulk_create(objs=airports, batch_size=cls.DEFAULT_BATCH_SIZE)
+            tr_db.Airport.objects.bulk_create(objs=airports, batch_size=DEFAULT_BATCH_SIZE)
+
+    @staticmethod
+    def get_airports_by_airport_data(airports_data: List[AirportData]) -> List[tr_db.Airport]:
+        # TODO: this implementation is temporary, this data will be pre-loaded with the dao
+        return tr_db.Airport.objects.filter(id__in=[a.id for a in airports_data])

@@ -1,10 +1,11 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Dict, Callable, Tuple
 import csv
 from math import sin, cos, sqrt, atan2, radians
-from django.db import models
 
 DEFAULT_ENCODING = 'UTF-8'
+DEFAULT_BATCH_SIZE = 500
 
 
 def read_from_csv_to_lists(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[List[Any]]:
@@ -63,3 +64,14 @@ def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) 
 
     return distance
 
+
+# this is not an exact answer yet mostly provides a rough estimation
+def calculate_flight_time(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
+    FLIGHT_AVG_SPEED = 750
+    return calculate_distance_on_map(p0, p1) / FLIGHT_AVG_SPEED
+
+
+@dataclass
+class Coordinates:
+    lat: float
+    lng: float

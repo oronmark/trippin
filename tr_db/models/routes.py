@@ -30,18 +30,20 @@ class Transportation(BaseModel):
     legs = models.IntegerField(null=True)
 
 
+# TODO: add several options of airport arrival (transit, driving)
+# TODO: rename
 class Flight(BaseModel):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
                                 related_name='airport')
     airport_transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
                                                   related_name='airport_transportation')
-    flight_details = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
-                                          related_name='flight_details')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
 
 
 class RouteOption(BaseModel):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
+    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
+                                          related_name='transportation')
 
     class Meta:
         abstract = True
@@ -49,20 +51,16 @@ class RouteOption(BaseModel):
 
 # TODO: consider adding details regarding multi leg flights
 class FlightRoute(RouteOption):
-    flight_0 = models.ForeignKey(Flight, on_delete=models.CASCADE, null=False, related_name='flight_0')
-    flight_1 = models.ForeignKey(Flight, on_delete=models.CASCADE, null=False, related_name='flight_1')
+    flight_0 = models.OneToOneField(Flight, on_delete=models.CASCADE, null=False, related_name='flight_0')
+    flight_1 = models.OneToOneField(Flight, on_delete=models.CASCADE, null=False, related_name='flight_1')
 
     class Meta:
         unique_together = [('flight_0', 'flight_1'), ('flight_1', 'flight_0')]
 
 
-# TODO: unify if possible and expand objects
 class DriveRoute(RouteOption):
-    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
-                                          related_name='transportation')
+    pass
 
 
-# TODO: add type of transit and legs
 class TransitRoute(RouteOption):
-    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
-                                          related_name='transportation')
+    pass
