@@ -29,10 +29,8 @@ from pycode.tr_utils import Coordinates, calculate_flight_time, calculate_distan
 class RoutesEngine:
     MAX_AIRPORT_DISTANCE = 200
 
-    def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO,
-                 amadeus_client: Optional[amadeus.Client] = None):
+    def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
         self.gmaps_client = gmaps_client
-        self.amadeuse_client = amadeus_client
         self.airports_dao = airports_dao
 
     def create_routes_amadeus(self) -> List[Transportation]:
@@ -81,6 +79,7 @@ class RoutesEngine:
         return Flight(airport=airport, location=location, airport_transportation=airport_transportation)
 
     # TODO: need refactor, this is all wrong!
+    # TODO: add check if there is an airport connection to verify flight
     def create_route_option_flight(self, route: Route) -> FlightRoute:
         closest_airports_0 = self.airports_dao.get_closest_distances_by_airport(route.location_0,
                                                                                 self.MAX_AIRPORT_DISTANCE)
@@ -106,6 +105,8 @@ class RoutesEngine:
         transportation = Transportation(duration=duration, distance=distance, legs=1)
         return FlightRoute(flight_0=flight_0, flight_1=flight_1, route=route, transportation=transportation)
 
+
+    # TODO: fix
     def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):
 
         routes = []
@@ -118,30 +119,6 @@ class RoutesEngine:
 
         return routes, route_types
 
-    def get_destinations_iata_code(self, airport: Airport) -> List[str]:
-        try:
-            response = self.amadeuse_client.airport.direct_destinations.get(departureAirportCode='TLV')
-            return [a['iataCode'] for a in response.data]
-        except ResponseError as error:
-            raise Exception(
-                f'An error occurred while trying to fetch all linked airports, airport_code: ${airport.iata_code}, '
-                f'error: ${error}'
-            )
-
-    def create_airport_connections(self, airport: Airport):
-        logging.info(f'creating airport routes for ${airport.iata_code}')
-        airports_data = []
-        for d in self.get_destinations_iata_code(airport):
-            other_airport_code = self.airports_dao.get_airport_by_iata_code(d)
-            if other_airport_code:
-                airports_data.append(other_airport_code)
-
-        other_airports = Airport.objects.filter(iata_code__in=[code.iata_code for code in airports_data])
-        routes = [AirportConnection(airport_0=airport, airport_1=a) for a in other_airports.all()]
-
-        with transaction.atomic():
-            tr_db.AirportConnection.objects.bulk_create(objs=routes)
-
 
 def main():
     airport_codes_subset_for_test = ['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG']
@@ -152,13 +129,13 @@ def main():
         hostname='test'
     )
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    airports_dao = AirportsDAO()
-    routes_engine = RoutesEngine(gmaps_client=gmaps, amadeus_client=amadeus, airports_dao=airports_dao)
+    airports_dao = AirportsDAO(amadeus_client=amadeus)
+    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
 
     # attempt to add airports routes for test airports
     for code in airport_codes_subset_for_test:
         airport = tr_db.Airport.objects.filter(iata_code=code).get()
-        routes_engine.create_airport_connections(airport)
+        airports_dao.create_airport_connections(airport)
 
     print('done')
 

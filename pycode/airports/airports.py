@@ -2,12 +2,16 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
+
+import amadeus
 from django.db import transaction
 from pycode.tr_enums import *
 from pycode.tr_path import tr_path
-from pycode.tr_utils import read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map
+from pycode.tr_utils import read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map, calculate_flight_time_by_distance
 from trippin import tr_db
 from pycode.tr_utils import DEFAULT_BATCH_SIZE
+import logging
+from amadeus import Client, ResponseError
 
 
 @dataclass
@@ -45,7 +49,8 @@ class AirportDataDistance:
 class AirportsDAO:
     AirportType = AirportData | tr_db.Airport
 
-    def __init__(self, path: Optional[Path] = None):
+    def __init__(self, amadeus_client: amadeus.Client,  path: Optional[Path] = None):
+        self._amadeus_client = amadeus_client
         self._path = self._create_path(path)
         airports_data = self._load_data(self._path)
         self._airports: List[AirportData] = self._create_airports(airports_data)
@@ -117,3 +122,34 @@ class AirportsDAO:
     def get_airports_by_airport_data(airports_data: List[AirportData]) -> List[tr_db.Airport]:
         # TODO: this implementation is temporary, this data will be pre-loaded with the dao
         return tr_db.Airport.objects.filter(id__in=[a.id for a in airports_data])
+
+    def get_destinations_iata_code(self, airport: tr_db.Airport) -> List[str]:
+        try:
+            response = self._amadeus_client.airport.direct_destinations.get(departureAirportCode='TLV')
+            return [a['iataCode'] for a in response.data]
+        except ResponseError as error:
+            raise Exception(
+                f'An error occurred while trying to fetch all linked airports, airport_code: ${airport.iata_code}, '
+                f'error: ${error}'
+            )
+
+    # TODO: preform db transaction somewhere else
+    def create_airport_connections(self, airport: tr_db.Airport):
+        logging.info(f'creating airport routes for ${airport.iata_code}')
+        airports_data = []
+        for d in self.get_destinations_iata_code(airport):
+            other_airport_code = self.get_airport_by_iata_code(d)
+            if other_airport_code:
+                airports_data.append(other_airport_code)
+
+        other_airports = tr_db.Airport.objects.filter(iata_code__in=[code.iata_code for code in airports_data])
+        connections = []
+        for other_airport in other_airports:
+            distance = calculate_distance_on_map((airport.latitude_deg, airport.longitude_deg),
+                                                 (other_airport.latitude_deg, other_airport.longitude_deg))
+            travel_time = calculate_flight_time_by_distance(distance)
+            connections.append(tr_db.AirportConnection(airport_0=airport, airport_1=other_airport,
+                                                       distance=distance, travel_time=travel_time))
+
+        with transaction.atomic():
+            tr_db.AirportConnection.objects.bulk_create(objs=connections)

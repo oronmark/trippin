@@ -8,6 +8,7 @@ from .airports import Airport
 # TODO: consider converting to symmetrical model (loc1, loc2 = loc2,loc1) (check if meta is working)
 # TODO: what should a rout stand for ? the time it takes to get from  point a to point b? for poc yes
 # TODO: add mixed transportation type (i.e driving and transit)
+# TODO: fix nullable fields
 class Route(BaseModel):
     location_0 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_0')
     location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
@@ -42,7 +43,7 @@ class Flight(BaseModel):
 
 class RouteOption(BaseModel):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
-    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
+    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
                                           related_name='transportation')
 
     class Meta:

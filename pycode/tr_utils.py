@@ -65,10 +65,18 @@ def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) 
     return distance
 
 
+FLIGHT_AVG_SPEED = 750
+
+
 # this is not an exact answer yet mostly provides a rough estimation
 def calculate_flight_time(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
-    FLIGHT_AVG_SPEED = 750
+
     return calculate_distance_on_map(p0, p1) / FLIGHT_AVG_SPEED
+
+
+# this is not an exact answer yet mostly provides a rough estimation
+def calculate_flight_time_by_distance(distance: float) -> float:
+    return distance / FLIGHT_AVG_SPEED
 
 
 @dataclass
