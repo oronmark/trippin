@@ -27,7 +27,6 @@ from pycode.tr_utils import Coordinates, calculate_flight_time, calculate_distan
 # TODO: airport connections is not efficient, refactor
 # TODO: currently drive only and only first result, need to expand
 class RoutesEngine:
-    MAX_AIRPORT_DISTANCE = 200
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
         self.gmaps_client = gmaps_client
@@ -81,29 +80,30 @@ class RoutesEngine:
     # TODO: need refactor, this is all wrong!
     # TODO: add check if there is an airport connection to verify flight
     def create_route_option_flight(self, route: Route) -> FlightRoute:
-        closest_airports_0 = self.airports_dao.get_closest_distances_by_airport(route.location_0,
-                                                                                self.MAX_AIRPORT_DISTANCE)
-        closest_airports_1 = self.airports_dao.get_closest_distances_by_airport(route.location_1,
-                                                                                self.MAX_AIRPORT_DISTANCE)
-        closest_airport_data_0 = min(closest_airports_0, key=lambda a: a.distance).airport_data
-        closest_airport_data_1 = min(closest_airports_1, key=lambda a: a.distance).airport_data
-        if not closest_airports_0 or not closest_airports_1:
-            raise Exception('Could not find any airport close enough to location')
-
-        # TODO: cannot guarantee order, fix this and check if db_airports were found
-        db_airports = self.airports_dao.get_airports_by_airport_data([closest_airport_data_0, closest_airport_data_1])
-
-        if len(db_airports) < 2:
-            raise Exception('Not all db airports were found')
-
-        flight_0 = self.create_flight(airport=db_airports[0], location=route.location_0)
-        flight_1 = self.create_flight(airport=db_airports[1], location=route.location_1)
-        distance = calculate_distance_on_map((db_airports[0].latitude_deg, db_airports[0].longitude_deg),
-                                             (db_airports[1].latitude_deg, db_airports[1].longitude_deg))
-        duration = calculate_flight_time((db_airports[0].latitude_deg, db_airports[0].longitude_deg),
-                                             (db_airports[1].latitude_deg, db_airports[1].longitude_deg))
-        transportation = Transportation(duration=duration, distance=distance, legs=1)
-        return FlightRoute(flight_0=flight_0, flight_1=flight_1, route=route, transportation=transportation)
+        pass
+        # closest_airports_0 = self.airports_dao.get_closest_distances_by_airport(route.location_0,
+        #                                                                         self.MAX_AIRPORT_DISTANCE)
+        # closest_airports_1 = self.airports_dao.get_closest_distances_by_airport(route.location_1,
+        #                                                                         self.MAX_AIRPORT_DISTANCE)
+        # closest_airport_data_0 = min(closest_airports_0, key=lambda a: a.distance).airport_data
+        # closest_airport_data_1 = min(closest_airports_1, key=lambda a: a.distance).airport_data
+        # if not closest_airports_0 or not closest_airports_1:
+        #     raise Exception('Could not find any airport close enough to location')
+        #
+        # # TODO: cannot guarantee order, fix this and check if db_airports were found
+        # db_airports = self.airports_dao.get_airports_by_airport_data([closest_airport_data_0, closest_airport_data_1])
+        #
+        # if len(db_airports) < 2:
+        #     raise Exception('Not all db airports were found')
+        #
+        # flight_0 = self.create_flight(airport=db_airports[0], location=route.location_0)
+        # flight_1 = self.create_flight(airport=db_airports[1], location=route.location_1)
+        # # distance = calculate_distance_on_map((db_airports[0].latitude_deg, db_airports[0].longitude_deg),
+        # #                                      (db_airports[1].latitude_deg, db_airports[1].longitude_deg))
+        # # duration = calculate_flight_time((db_airports[0].latitude_deg, db_airports[0].longitude_deg),
+        # #                                      (db_airports[1].latitude_deg, db_airports[1].longitude_deg))
+        # transportation = Transportation(duration=duration, distance=distance, legs=1)
+        # return FlightRoute(flight_0=flight_0, flight_1=flight_1, route=route, transportation=transportation)
 
 
     # TODO: fix
