@@ -17,7 +17,7 @@ from trippin import tr_db
 from pycode.tr_utils import DEFAULT_BATCH_SIZE
 import logging
 from amadeus import Client, ResponseError
-
+from django.db.models import Q
 
 @dataclass
 class AirportData:
@@ -52,6 +52,7 @@ class AirportDataDistance:
 # TODO load once into memory and use a cache and convert to singleton
 # TODO add airport distances and flight time to db?
 # TODO add condition for closest airport that it is reachable by walk/transit/car
+# TODO delete AirportDataDistance and AirportData
 class AirportsDAO:
     AirportType = AirportData | tr_db.Airport
     MAX_AIRPORT_DISTANCE = 200
@@ -167,28 +168,29 @@ class AirportsDAO:
         with transaction.atomic():
             tr_db.AirportConnection.objects.bulk_create(objs=connections)
 
-    # TODO: for now will return 0 or 1 results, should be multiple choice
-    def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
-                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE):
-
-        closest_airports_0 = self.get_closest_distances_by_airport(p0, max_distance)
-        closest_airports_1 = self.get_closest_distances_by_airport(p1, max_distance)
-        airport_pairs = list(product(closest_airports_0, closest_airports_1))
-
-        from django.db.models import Q
-        queries = [Q(airport_0_id=p[0].airport_data.id, airport_1_id=p[1].airport_data.id) for p in airport_pairs]
-        queries.extend([Q(airport_0_id=p[1].airport_data.id, airport_1_id=p[0].airport_data.id) for p in airport_pairs])
+    @staticmethod
+    def _create_airports_connection_query(potential_connections: List[Tuple[AirportDataDistance, AirportDataDistance]]) -> Q:
+        queries = [Q(airport_0_id=p[0].airport_data.id, airport_1_id=p[1].airport_data.id)
+                   for p in potential_connections]
+        symmetric_queries = [Q(airport_0_id=p[1].airport_data.id, airport_1_id=p[0].airport_data.id)
+                             for p in potential_connections]
+        queries.extend(symmetric_queries)
         query = queries.pop()
         for q in queries:
             query |= q
 
-        connections = tr_db.AirportConnection.objects.filter(query)
-        for c in connections:
-            print('dgdsg')
-            print(c.airport_0.name)
-            print(c.airport_1.name)
-            print('dgdsg')
-        return 1
+        return query
+
+    # TODO: filter out airports that does not fit (e.g not accessible by car)
+    def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
+                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[tr_db.AirportConnection]:
+
+        closest_airports_0 = self.get_closest_distances_by_airport(p0, max_distance)
+        closest_airports_1 = self.get_closest_distances_by_airport(p1, max_distance)
+        potential_connections = list(product(closest_airports_0, closest_airports_1))
+
+        return tr_db.AirportConnection.objects.filter(self._create_airports_connection_query(potential_connections))
+
 
 
 def main():
