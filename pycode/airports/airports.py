@@ -2,12 +2,22 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
+from itertools import product
+
+import django
+
+django.setup()
+import amadeus
 from django.db import transaction
 from pycode.tr_enums import *
 from pycode.tr_path import tr_path
-from pycode.tr_utils import read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map
+from pycode.tr_utils import Coordinates, read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map, \
+    calculate_flight_time_by_distance
 from trippin import tr_db
-
+from pycode.tr_utils import DEFAULT_BATCH_SIZE
+import logging
+from amadeus import Client, ResponseError
+from django.db.models import Q
 
 @dataclass
 class AirportData:
@@ -39,10 +49,16 @@ class AirportDataDistance:
 # TODO refactor init
 # TODO convert to singleton
 # TODO divide to levels: continent, region etc for faster results in get_closest_airports
+# TODO load once into memory and use a cache and convert to singleton
+# TODO add airport distances and flight time to db?
+# TODO add condition for closest airport that it is reachable by walk/transit/car
+# TODO delete AirportDataDistance and AirportData
 class AirportsDAO:
     AirportType = AirportData | tr_db.Airport
+    MAX_AIRPORT_DISTANCE = 200
 
-    def __init__(self, path: Optional[Path] = None):
+    def __init__(self, amadeus_client: Optional[amadeus.Client] = None, path: Optional[Path] = None):
+        self._amadeus_client = amadeus_client
         self._path = self._create_path(path)
         airports_data = self._load_data(self._path)
         self._airports: List[AirportData] = self._create_airports(airports_data)
@@ -85,18 +101,24 @@ class AirportsDAO:
         return [AirportDataDistance(a, calculate_distance_on_map((a.latitude_deg, a.longitude_deg), (lat, lng))) for a
                 in self._airports]
 
-    def get_distance_by_airport_for_location(self, location: tr_db.Location) -> List[AirportDataDistance]:
-        return self.get_distance_by_airport(lat=location.lat, lng=location.lng)
+    def get_distance_by_airport_for_coordinate(self, c: Coordinates) -> List[AirportDataDistance]:
+        return self.get_distance_by_airport(c.lat, c.lng)
 
-    def get_closest_distances_by_airport(self, location: tr_db.Location, max_distance: float) -> List[
-            AirportDataDistance]:
-        return [a_d for a_d in self.get_distance_by_airport_for_location(location) if a_d.distance <= max_distance]
+    def get_closest_distances_by_airport(self, c: Coordinates, max_distance: float) -> List[AirportDataDistance]:
+        return [a_d for a_d in self.get_distance_by_airport_for_coordinate(c) if a_d.distance <= max_distance]
+
+    # def get_distance_by_airport_for_location(self, location: tr_db.Location) -> List[AirportDataDistance]:
+    #     return self.get_distance_by_airport(lat=location.lat, lng=location.lng)
+    #
+    # def get_closest_distances_by_airport(self, location: tr_db.Location, max_distance: float) -> List[
+    #     AirportDataDistance]:
+    #     return [a_d for a_d in self.get_distance_by_airport_for_location(location) if a_d.distance <= max_distance]
 
     def get_airport_by_iata_code(self, iata_code: str) -> Optional[AirportType]:
         return self.airports_by_iata_code.get(iata_code, None)
 
     @classmethod
-    def dump_csv_to_db(cls, path: Optional[Path] = None):
+    def dump_to_db(cls, path: Optional[Path] = None):
         airports_dicts = cls._load_data(cls._create_path(path))
         airports_data = cls._create_airports(airports_dicts)
         airports = []
@@ -108,4 +130,85 @@ class AirportsDAO:
             airports.append(db_airport)
 
         with transaction.atomic():
-            tr_db.Airport.objects.bulk_create(objs=airports, batch_size=cls.DEFAULT_BATCH_SIZE)
+            tr_db.Airport.objects.bulk_create(objs=airports, batch_size=DEFAULT_BATCH_SIZE)
+
+    @staticmethod
+    def get_airports_by_airport_data(airports_data: List[AirportData]) -> List[tr_db.Airport]:
+        # TODO: this implementation is temporary, this data will be pre-loaded with the dao
+        return tr_db.Airport.objects.filter(id__in=[a.id for a in airports_data])
+
+    def get_destinations_iata_code(self, airport: tr_db.Airport) -> List[str]:
+        try:
+            response = self._amadeus_client.airport.direct_destinations.get(departureAirportCode=airport.iata_code)
+            return [a['iataCode'] for a in response.data]
+        except ResponseError as error:
+            raise Exception(
+                f'An error occurred while trying to fetch all linked airports, airport_code: ${airport.iata_code}, '
+                f'error: ${error}'
+            )
+
+    # TODO: preform db transaction somewhere else
+    def create_airport_connections(self, airport: tr_db.Airport):
+        logging.info(f'creating airport routes for ${airport.iata_code}')
+        airports_data = []
+        for d in self.get_destinations_iata_code(airport):
+            other_airport_code = self.get_airport_by_iata_code(d)
+            if other_airport_code:
+                airports_data.append(other_airport_code)
+
+        other_airports = tr_db.Airport.objects.filter(iata_code__in=[code.iata_code for code in airports_data])
+        connections = []
+        for other_airport in other_airports:
+            distance = calculate_distance_on_map((airport.latitude_deg, airport.longitude_deg),
+                                                 (other_airport.latitude_deg, other_airport.longitude_deg))
+            travel_time = calculate_flight_time_by_distance(distance)
+            connections.append(tr_db.AirportConnection(airport_0=airport, airport_1=other_airport,
+                                                       distance=distance, travel_time=travel_time))
+
+        with transaction.atomic():
+            tr_db.AirportConnection.objects.bulk_create(objs=connections)
+
+    @staticmethod
+    def _create_airports_connection_query(potential_connections: List[Tuple[AirportDataDistance, AirportDataDistance]]) -> Q:
+        queries = [Q(airport_0_id=p[0].airport_data.id, airport_1_id=p[1].airport_data.id)
+                   for p in potential_connections]
+        symmetric_queries = [Q(airport_0_id=p[1].airport_data.id, airport_1_id=p[0].airport_data.id)
+                             for p in potential_connections]
+        queries.extend(symmetric_queries)
+        query = queries.pop()
+        for q in queries:
+            query |= q
+
+        return query
+
+    # TODO: filter out airports that does not fit (e.g not accessible by car)
+    def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
+                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[tr_db.AirportConnection]:
+
+        closest_airports_0 = self.get_closest_distances_by_airport(p0, max_distance)
+        closest_airports_1 = self.get_closest_distances_by_airport(p1, max_distance)
+        potential_connections = list(product(closest_airports_0, closest_airports_1))
+
+        return tr_db.AirportConnection.objects.filter(self._create_airports_connection_query(potential_connections))
+
+    def get_connected_airports_for_locations(self, location_0: tr_db.Location, location_1: tr_db.Location)\
+            -> List[tr_db.AirportConnection]:
+        return self.get_connected_airports(Coordinates(location_0.lat, location_0.lng),
+                                           Coordinates(location_1.lat, location_1.lng))
+
+
+
+def main():
+    # new york
+    # "lat": 40.7127753,
+    # "lng": -74.0059728
+
+    # afula
+    # "lat": 32.6104931,
+    # "lng": 35.287922
+    airports_dao = AirportsDAO()
+    ans = airports_dao.get_connected_airports(Coordinates(lat=40.7127753, lng=-74.0059728), Coordinates(lat=32.6104931, lng=35.287922))
+    # tlv_airport = tr_db.Airport.objects.filter(iata_code='TLV').get()
+
+if __name__ == '__main__':
+    main()
