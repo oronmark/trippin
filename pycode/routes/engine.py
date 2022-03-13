@@ -80,7 +80,7 @@ class RoutesEngine:
     # TODO: need refactor, this is all wrong!
     # TODO: add check if there is an airport connection to verify flight
     def create_route_option_flight(self, route: Route) -> FlightRoute:
-        pass
+        connected_airports
         # closest_airports_0 = self.airports_dao.get_closest_distances_by_airport(route.location_0,
         #                                                                         self.MAX_AIRPORT_DISTANCE)
         # closest_airports_1 = self.airports_dao.get_closest_distances_by_airport(route.location_1,
@@ -129,13 +129,13 @@ def main():
         hostname='test'
     )
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    airports_dao = AirportsDAO(amadeus_client=amadeus)
-    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-
-    # attempt to add airports routes for test airports
-    for code in airport_codes_subset_for_test:
-        airport = tr_db.Airport.objects.filter(iata_code=code).get()
-        airports_dao.create_airport_connections(airport)
+    # airports_dao = AirportsDAO(amadeus_client=amadeus)
+    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
+    #
+    # # attempt to add airports routes for test airports
+    # for code in airport_codes_subset_for_test:
+    #     airport = tr_db.Airport.objects.filter(iata_code=code).get()
+    #     airports_dao.create_airport_connections(airport)
 
     print('done')
 

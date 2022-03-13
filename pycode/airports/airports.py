@@ -191,6 +191,11 @@ class AirportsDAO:
 
         return tr_db.AirportConnection.objects.filter(self._create_airports_connection_query(potential_connections))
 
+    def get_connected_airports_for_locations(self, location_0: tr_db.Location, location_1: tr_db.Location)\
+            -> List[tr_db.AirportConnection]:
+        return self.get_connected_airports(Coordinates(location_0.lat, location_0.lng),
+                                           Coordinates(location_1.lat, location_1.lng))
+
 
 
 def main():
