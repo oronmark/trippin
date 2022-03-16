@@ -1,6 +1,6 @@
 from .base_models import BaseModel
 from django.db import models
-
+from trippin.pycode.tr_utils import sort_attributes
 
 class Airport(BaseModel):
     id = models.CharField(primary_key=True, max_length=255, null=True)
@@ -15,6 +15,9 @@ class Airport(BaseModel):
     gps_code = models.CharField(max_length=5, null=True)
     iata_code = models.CharField(max_length=3, null=True)
 
+    class Meta:
+        unique_together = ['iata_code', 'id']
+
     def __str__(self):
         return self.iata_code
 
@@ -28,3 +31,7 @@ class AirportConnection(BaseModel):
 
     class Meta:
         unique_together = ('airport_0', 'airport_1')
+
+    def save(self, *args, **kwargs):
+        sort_attributes(self, lambda l: l.iata_code, ['airport_0', 'airport_1'])
+        super(AirportConnection, self).save(*args, **kwargs)

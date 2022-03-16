@@ -3,9 +3,9 @@ from .base_models import BaseModel
 from django.db import models
 from .locations import Location
 from .airports import Airport
+from trippin.pycode.tr_utils import sort_attributes
 
 
-# TODO: consider converting to symmetrical model (loc1, loc2 = loc2,loc1) (check if meta is working)
 # TODO: what should a rout stand for ? the time it takes to get from  point a to point b? for poc yes
 # TODO: add mixed transportation type (i.e driving and transit)
 # TODO: fix nullable fields
@@ -14,7 +14,20 @@ class Route(BaseModel):
     location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
 
     class Meta:
-        unique_together = [('location_0', 'location_1'), ('location_1', 'location_0')]
+        unique_together = [('location_0', 'location_1')]
+
+    # sorting the attributes makes the unique_together constraint symmetrical
+    def save(self, *args, **kwargs):
+        sort_attributes(self, lambda l: l.place_id, ['location_0', 'location_1'])
+        super(Route, self).save(*args, **kwargs)
+
+
+    # def save(self, *args, **kwargs):
+    #     if self.location_0.place_id > self.location_1.place_id:
+    #         temp = self.location_0
+    #         self.location_0 = self.location_1
+    #         self.location_1 = temp
+    #     super(Route, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'location_0={self.location_0.name}, location_1={self.location_1.name}'

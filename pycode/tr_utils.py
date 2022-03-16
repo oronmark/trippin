@@ -119,7 +119,9 @@ def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
 
 
-
-
-
+def sort_attributes(obj, f, attributes):
+    values = [getattr(obj, att) for att in attributes]
+    values.sort(key=f)
+    for att, val in zip(attributes, values):
+        setattr(obj, att, val)
 

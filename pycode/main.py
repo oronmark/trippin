@@ -86,34 +86,49 @@ def main():
     athens = tr_db.Location.objects.filter(name='Athens').first()
     route = tr_db.Route(location_0=tel_aviv, location_1=athens)
 
-    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    amadeus = Client(
-        client_id=os.environ['AMADEUS_API_KEY'],
-        client_secret=os.environ['AMADEUS_API_SECRET'],
-        hostname='test'
-    )
-    airports_dao = AirportsDAO(amadeus_client=amadeus)
-    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-
-    driving_route = routes_engine.create_route_option_driving(route)
-    flight_route = routes_engine.create_route_option_flight(route)
-    print('asfasf')
-
-    # @tr_utils.coordinates_decorator
-    # def some_function(p0: Coordinates, p1: Coordinates, some_other_thing: int):
-    #     print(p0)
-    #     print(p1)
-    #     print('asfgasfgasf')
+    # gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    # amadeus = Client(
+    #     client_id=os.environ['AMADEUS_API_KEY'],
+    #     client_secret=os.environ['AMADEUS_API_SECRET'],
+    #     hostname='test'
+    # )
+    # airports_dao = AirportsDAO(amadeus_client=amadeus)
+    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
     #
-    # some_function(tel_aviv, athens, 3)
-    # print('done')
+    # driving_route = routes_engine.create_route_option_driving(route)
+    # flight_route = routes_engine.create_route_option_flight(route)
+    # print('asfasf')
 
-    # routes
-    # location -> location
-    # airport -> locations
-    # location -> airport
-    # airport -> airport
+    # test_location_0 = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8Eddd', lng=34.78176759999999, lat=32.0852999,
+    #                                  country='IL',name='test_location_0')
+    #
+    # test_location_1 = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E12312', lng=34.78176759999999, lat=32.0852999,
+    #                                  country='IL',name='test_location_1')
 
+    # test_location_0.save()
+    # test_location_1.save()
+    # test_location_0 = tr_db.Location.objects.filter(name='test_location_0').get()
+    # test_location_1 = tr_db.Location.objects.filter(name='test_location_1').get()
+    # test_location_2 = tr_db.Location(place_id='ChIJH3w7URkD-WwKJy-8Eddd123', lng=34.78176759999999, lat=32.0852999,
+    #                                  country='IL',name='test_location_2')
+    # test_location_2.save()
+    # test_location_3 = tr_db.Location(place_id='ChIJH3HRURkD-WwKJyasfsa-8E12312', lng=34.78176759999999, lat=32.0852999,
+    #                                  country='IL',name='test_location_3')
+    # test_location_3.save()
+
+
+    # test_location_4 = tr_db.Location(place_id='CaaahIJH3w7URkD-WwKJy-8Eddd123', lng=34.78176759999999, lat=32.0852999,
+    #                                  country='IL',name='test_location_4')
+    # test_location_4.save()
+    # test_location_5 = tr_db.Location(place_id='ChIJHaakD-WwKJyasfsa-8E12312', lng=34.78176759999999, lat=32.0852999,
+    #                                  country='IL',name='test_location_5')
+    # test_location_5.save()
+
+    test_location_4 = tr_db.Location.objects.filter(name='test_location_4').get()
+    test_location_5 = tr_db.Location.objects.filter(name='test_location_5').get()
+    route = tr_db.Route(location_0=test_location_5, location_1=test_location_4)
+
+    route.save()
 
 if __name__ == '__main__':
     main()
