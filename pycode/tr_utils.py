@@ -4,8 +4,31 @@ from typing import Any, List, Optional, Dict, Callable, Tuple
 import csv
 from math import sin, cos, sqrt, atan2, radians
 
+from trippin import tr_db
+from pycode.airports.airport_data import AirportData
+
 DEFAULT_ENCODING = 'UTF-8'
 DEFAULT_BATCH_SIZE = 500
+
+
+@dataclass
+class Coordinates:
+    lat: float
+    lng: float
+
+
+def coordinates_decorator(func):
+    def inner(*args):
+        def convert_to_coordinates(obj: Any) -> Any:
+            if isinstance(obj, tr_db.Location):
+                return Coordinates(lat=obj.lat, lng=obj.lng)
+            if isinstance(obj, tr_db.Airport):
+                return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
+            if isinstance(obj, AirportData):
+                return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
+            return obj
+        return func(*[convert_to_coordinates(a) for a in args])
+    return inner
 
 
 def read_from_csv_to_lists(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[List[Any]]:
@@ -48,17 +71,35 @@ def convert_dict_to_dataclass(data: Dict[Any, Any], class_type,
     return obj
 
 
-def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
+# def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
+#     # this function calculates the distance between 2 points on a map in km
+#     # this was implemented explicitly because using the geopy.distance function was very slow
+#     r = 6373.0
+#     lat1 = radians(p0[0])
+#     lon1 = radians(p0[1])
+#     lat2 = radians(p1[0])
+#     lon2 = radians(p1[1])
+#     d_lon = lon2 - lon1
+#     d_lat = lat2 - lat1
+#     a = sin(d_lat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(d_lon / 2) ** 2
+#     c = 2 * atan2(sqrt(a), sqrt(1 - a))
+#     distance = r * c
+#
+#     return distance
+
+
+@coordinates_decorator
+def calculate_distance_on_map(p0: Coordinates, p1: Coordinates) -> float:
     # this function calculates the distance between 2 points on a map in km
     # this was implemented explicitly because using the geopy.distance function was very slow
     r = 6373.0
-    lat1 = radians(p0[0])
-    lon1 = radians(p0[1])
-    lat2 = radians(p1[0])
-    lon2 = radians(p1[1])
-    d_lon = lon2 - lon1
-    d_lat = lat2 - lat1
-    a = sin(d_lat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(d_lon / 2) ** 2
+    lat0 = radians(p0.lat)
+    lon0 = radians(p0.lng)
+    lat1 = radians(p1.lat)
+    lon1 = radians(p1.lng)
+    d_lon = lon1 - lon0
+    d_lat = lat1 - lat0
+    a = sin(d_lat / 2) ** 2 + cos(lat0) * cos(lat1) * sin(d_lon / 2) ** 2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     distance = r * c
 
@@ -69,7 +110,7 @@ FLIGHT_AVG_SPEED = 750
 
 
 # this is not an exact answer yet mostly provides a rough estimation
-def calculate_flight_time(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
+def calculate_flight_time(p0: Coordinates, p1: Coordinates) -> float:
     return calculate_distance_on_map(p0, p1) / FLIGHT_AVG_SPEED
 
 
@@ -78,22 +119,7 @@ def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
 
 
-@dataclass
-class Coordinates:
-    lat: float
-    lng: float
 
 
-# TODO: fix and use
-# TODO: expand to enable the use of multiple arguments
-# def coordinates_decorator(func):
-#     def inner(*args, **kwargs):
-#         arg = args[0]
-#         if isinstance(arg, tr_db.Location):
-#             return func(Coordinates(lat=arg.lat, lng=arg.lng))
-#         if isinstance(arg, tr_db.Airport):
-#             return func(Coordinates(lat=arg.latitude_deg, lng=arg.longitude_deg))
-#         if isinstance(arg, tr_db.Route):
-#             return func(Coordinates(lat=arg.location_0.lat, lng=arg.location_0.lng),
-#                         Coordinates(lat=arg.location_1.lat, lng=arg.location_1.lng))
-#         raise Exception(f'Cannot convert object to Coordinates, unknown type: {type(arg)}')
+
+

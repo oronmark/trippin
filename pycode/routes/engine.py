@@ -13,8 +13,7 @@ from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, AirportConnection, FlightRoute, AirportLocation, \
     DriveRoute
 from pycode.airports.airports import AirportsDAO
-from django.db import transaction
-from pycode.tr_utils import Coordinates, calculate_flight_time, calculate_distance_on_map
+from pycode.tr_utils import Coordinates, coordinates_decorator
 
 
 # TODO: add error handling, logging and costume exceptions
@@ -39,6 +38,7 @@ class RoutesEngine:
         pass
 
     # TODO: rename
+    @coordinates_decorator
     def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
             List[Transportation]:
 
@@ -54,15 +54,9 @@ class RoutesEngine:
                                                         legs=1))
         return transportations
 
-    def create_transportations_by_route(self, route: Route, transportation_type: Transportation.Type) \
-            -> List[Transportation]:
-        return self.create_transportations(p0=Coordinates(lat=route.location_0.lat, lng=route.location_0.lng),
-                                           p1=Coordinates(lat=route.location_1.lat, lng=route.location_1.lng),
-                                           transportation_type=transportation_type)
-
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
-        transportations = self.create_transportations_by_route(route, Transportation.Type.DRIVING)
+        transportations = self.create_transportations(route.location_0, route.location_1, Transportation.Type.DRIVING)
         return [DriveRoute(route=route, transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
@@ -74,10 +68,7 @@ class RoutesEngine:
 
     # TODO: add transit to means of transportation
     def create_airport_location(self, airport: Airport, location: Location) -> List[AirportLocation]:
-        transportations = self.create_transportations(
-            p0=Coordinates(lat=airport.latitude_deg, lng=airport.longitude_deg),
-            p1=Coordinates(lat=location.lat, lng=location.lng),
-            transportation_type=Transportation.Type.DRIVING)
+        transportations = self.create_transportations(airport, location, Transportation.Type.DRIVING)
 
         return [AirportLocation(airport=airport, location=location, airport_transportation=t)
                 for t in transportations]
@@ -86,7 +77,7 @@ class RoutesEngine:
     # TODO: to start, use a single option of connected airports
     # TODO: to start use a single option for AirportLocation
     def create_route_option_flight(self, route: Route) -> FlightRoute:
-        connected_airports = self.airports_dao.get_connected_airports_for_locations(route.location_0, route.location_1)
+        connected_airports = self.airports_dao.get_connected_airports(route.location_0, route.location_1)
         if not connected_airports:
             raise Exception(f'Could not find any connected airports for route {route}')
 
