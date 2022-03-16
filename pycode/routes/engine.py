@@ -18,7 +18,6 @@ from pycode.tr_utils import Coordinates, coordinates_decorator
 
 # TODO: add error handling, logging and costume exceptions
 # TODO: remove optional
-# TODO: build route for flight and check if mid routes will work
 # TODO: unify all transactions to a single function
 # TODO: add tracking bar
 # TODO: consider using distance matrix rather the direction
