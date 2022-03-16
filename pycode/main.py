@@ -6,12 +6,14 @@ import django
 from amadeus import Client
 
 from pycode.airports.airports import AirportsDAO
+from pycode.tr_utils import Coordinates
 
 django.setup()
 from trippin import tr_db
 from trippin.tr_db import Location, Route
 import datetime
 from routes.engine import RoutesEngine
+from trippin.pycode import tr_utils
 
 
 # open questions
@@ -42,9 +44,9 @@ def main():
     # print('bla')
 
     # directions_result = gmaps.directions((37.9838096, 23.7275388), (40.1029473, 22.5026117), mode='driving')
-   # directions_result = gmaps.directions('afula', 'eilat', mode='driving', waypoints=['herzliya', 'haifa'])
-  #  directions_result = gmaps.directions('afula', 'new york', mode='transit')
-  #  directions_result = gmaps.directions('athens', 'litochoro', mode='driving')
+    # directions_result = gmaps.directions('afula', 'eilat', mode='driving', waypoints=['herzliya', 'haifa'])
+    #  directions_result = gmaps.directions('afula', 'new york', mode='transit')
+    #  directions_result = gmaps.directions('athens', 'litochoro', mode='driving')
 
     # from amadeus import Client, ResponseError
     #
@@ -53,7 +55,6 @@ def main():
     #     client_secret=os.environ['AMADEUS_API_SECRET'],
     #     hostname='test'
     # )
-
 
     # tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999, country='IL',
     #                         name='Tel-aviv')
@@ -81,11 +82,9 @@ def main():
 
     # athens_aspect_0.save()
 
-
-    tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').first()
+    tel_aviv: Location = tr_db.Location.objects.filter(name='Tel-aviv').first()
     athens = tr_db.Location.objects.filter(name='Athens').first()
     route = tr_db.Route(location_0=tel_aviv, location_1=athens)
-
 
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
     amadeus = Client(
@@ -95,15 +94,26 @@ def main():
     )
     airports_dao = AirportsDAO(amadeus_client=amadeus)
     routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-    #driving_route = routes_engine.create_route_option_driving(route)
-    flight_route = routes_engine.create_route_option_flight(route)
 
-    print('done')
+    driving_route = routes_engine.create_route_option_driving(route)
+    flight_route = routes_engine.create_route_option_flight(route)
+    print('asfasf')
+
+    # @tr_utils.coordinates_decorator
+    # def some_function(p0: Coordinates, p1: Coordinates, some_other_thing: int):
+    #     print(p0)
+    #     print(p1)
+    #     print('asfgasfgasf')
+    #
+    # some_function(tel_aviv, athens, 3)
+    # print('done')
 
     # routes
     # location -> location
     # airport -> locations
     # location -> airport
     # airport -> airport
+
+
 if __name__ == '__main__':
     main()
