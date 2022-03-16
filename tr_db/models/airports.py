@@ -15,6 +15,9 @@ class Airport(BaseModel):
     gps_code = models.CharField(max_length=5, null=True)
     iata_code = models.CharField(max_length=3, null=True)
 
+    def __str__(self):
+        return self.iata_code
+
 
 # TODO consider unifying with route model
 class AirportConnection(BaseModel):

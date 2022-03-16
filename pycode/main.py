@@ -3,6 +3,9 @@
 from typing import List
 
 import django
+from amadeus import Client
+
+from pycode.airports.airports import AirportsDAO
 
 django.setup()
 from trippin import tr_db
@@ -43,13 +46,13 @@ def main():
   #  directions_result = gmaps.directions('afula', 'new york', mode='transit')
   #  directions_result = gmaps.directions('athens', 'litochoro', mode='driving')
 
-    from amadeus import Client, ResponseError
-
-    amadeus = Client(
-        client_id=os.environ['AMADEUS_API_KEY'],
-        client_secret=os.environ['AMADEUS_API_SECRET'],
-        hostname='test'
-    )
+    # from amadeus import Client, ResponseError
+    #
+    # amadeus = Client(
+    #     client_id=os.environ['AMADEUS_API_KEY'],
+    #     client_secret=os.environ['AMADEUS_API_SECRET'],
+    #     hostname='test'
+    # )
 
 
     # tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999, country='IL',
@@ -79,9 +82,27 @@ def main():
     # athens_aspect_0.save()
 
 
+    tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').first()
+    athens = tr_db.Location.objects.filter(name='Athens').first()
+    route = tr_db.Route(location_0=tel_aviv, location_1=athens)
+
+
+    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    amadeus = Client(
+        client_id=os.environ['AMADEUS_API_KEY'],
+        client_secret=os.environ['AMADEUS_API_SECRET'],
+        hostname='test'
+    )
+    airports_dao = AirportsDAO(amadeus_client=amadeus)
+    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
+    #driving_route = routes_engine.create_route_option_driving(route)
+    flight_route = routes_engine.create_route_option_flight(route)
+
+    print('done')
+
     # routes
     # location -> location
-    # airport -> location
+    # airport -> locations
     # location -> airport
     # airport -> airport
 if __name__ == '__main__':

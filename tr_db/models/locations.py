@@ -10,6 +10,9 @@ class Location(BaseModel):
     lat = models.FloatField(null=False)
     country = models.CharField(null=False, max_length=2)
 
+    def __str__(self):
+        return self.place_id
+
 
 # TODO: add activity, theme (specific activity like harry potter)
 # TODO: add places to work

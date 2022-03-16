@@ -70,7 +70,6 @@ FLIGHT_AVG_SPEED = 750
 
 # this is not an exact answer yet mostly provides a rough estimation
 def calculate_flight_time(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
-
     return calculate_distance_on_map(p0, p1) / FLIGHT_AVG_SPEED
 
 
@@ -83,3 +82,18 @@ def calculate_flight_time_by_distance(distance: float) -> float:
 class Coordinates:
     lat: float
     lng: float
+
+
+# TODO: fix and use
+# TODO: expand to enable the use of multiple arguments
+# def coordinates_decorator(func):
+#     def inner(*args, **kwargs):
+#         arg = args[0]
+#         if isinstance(arg, tr_db.Location):
+#             return func(Coordinates(lat=arg.lat, lng=arg.lng))
+#         if isinstance(arg, tr_db.Airport):
+#             return func(Coordinates(lat=arg.latitude_deg, lng=arg.longitude_deg))
+#         if isinstance(arg, tr_db.Route):
+#             return func(Coordinates(lat=arg.location_0.lat, lng=arg.location_0.lng),
+#                         Coordinates(lat=arg.location_1.lat, lng=arg.location_1.lng))
+#         raise Exception(f'Cannot convert object to Coordinates, unknown type: {type(arg)}')

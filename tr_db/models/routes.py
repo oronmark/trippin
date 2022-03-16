@@ -16,6 +16,9 @@ class Route(BaseModel):
     class Meta:
         unique_together = [('location_0', 'location_1'), ('location_1', 'location_0')]
 
+    def __str__(self):
+        return f'location_0={self.location_0.name}, location_1={self.location_1.name}'
+
 
 class Transportation(BaseModel):
     class Type(Enum):
@@ -33,7 +36,7 @@ class Transportation(BaseModel):
 
 # TODO: add several options of airport arrival (transit, driving)
 # TODO: rename
-class Flight(BaseModel):
+class AirportLocation(BaseModel):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
                                 related_name='airport')
     airport_transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
@@ -51,12 +54,15 @@ class RouteOption(BaseModel):
 
 
 # TODO: consider adding details regarding multi leg flights
+# TODO: make nullable false
 class FlightRoute(RouteOption):
-    flight_0 = models.OneToOneField(Flight, on_delete=models.CASCADE, null=False, related_name='flight_0')
-    flight_1 = models.OneToOneField(Flight, on_delete=models.CASCADE, null=False, related_name='flight_1')
+    airport_location_0 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
+                                              null=True, related_name='airport_location_0')
+    airport_location_1 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
+                                              null=True, related_name='airport_location_1')
 
     class Meta:
-        unique_together = [('flight_0', 'flight_1'), ('flight_1', 'flight_0')]
+        unique_together = [('airport_location_0', 'airport_location_1'), ('airport_location_1', 'airport_location_0')]
 
 
 class DriveRoute(RouteOption):

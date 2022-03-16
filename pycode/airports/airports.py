@@ -182,6 +182,7 @@ class AirportsDAO:
         return query
 
     # TODO: filter out airports that does not fit (e.g not accessible by car)
+    # TODO: should be optimized, remove redundant options
     def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
                                max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[tr_db.AirportConnection]:
 
@@ -202,13 +203,14 @@ def main():
     # new york
     # "lat": 40.7127753,
     # "lng": -74.0059728
+    p0 = Coordinates(lat=40.7127753, lng=-74.0059728)
 
     # afula
     # "lat": 32.6104931,
     # "lng": 35.287922
+    p1 = Coordinates(lat=32.6104931, lng=35.287922)
     airports_dao = AirportsDAO()
-    ans = airports_dao.get_connected_airports(Coordinates(lat=40.7127753, lng=-74.0059728), Coordinates(lat=32.6104931, lng=35.287922))
-    # tlv_airport = tr_db.Airport.objects.filter(iata_code='TLV').get()
+    ans = airports_dao.get_connected_airports(p0, p1)
 
 if __name__ == '__main__':
     main()
