@@ -52,16 +52,6 @@ class RoutesEngine:
             transportations.append(tr_db.Transportation(distance=result['distance']['value'],
                                                         duration=result['duration']['value'],
                                                         legs=1))
-
-        # return [tr_db.Transportation(distance=d['distance']['value'], duration=d['duration']['value'], legs=1) \
-        #         for d in directions_result]
-
-        # if directions_result:
-        #     first_result = directions_result[0]['legs'][0]
-        #     drive_type = tr_db.Transportation(distance=first_result['distance']['value'],
-        #                                       duration=first_result['duration']['value'],
-        #                                       legs=1)
-        #     transportations.append(drive_type)
         return transportations
 
     def create_transportations_by_route(self, route: Route, transportation_type: Transportation.Type) \
