@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 django.setup()
 
 from trippin import tr_db
-from trippin.tr_db import Location, Route, Transportation, Airport, AirportConnection, FlightRoute, AirportLocation, \
+from trippin.tr_db import Location, Route, Transportation, Airport, AirportsConnection, FlightRoute, AirportLocation, \
     DriveRoute
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates, coordinates_decorator

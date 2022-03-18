@@ -1,9 +1,8 @@
 import os
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
 from itertools import product
-
+from datetime import datetime
 import django
 
 django.setup()
@@ -119,6 +118,8 @@ class AirportsDAO:
             )
 
     # TODO: preform db transaction somewhere else
+    # TODO: update airport update
+    # TODO: remove duplicate  connections
     def create_airport_connections(self, airport: tr_db.Airport):
         logging.info(f'creating airport routes for ${airport.iata_code}')
         airports_data = []
@@ -132,11 +133,13 @@ class AirportsDAO:
         for other_airport in other_airports:
             distance = calculate_distance_on_map(airport, other_airport)
             travel_time = calculate_flight_time_by_distance(distance)
-            connections.append(tr_db.AirportConnection(airport_0=airport, airport_1=other_airport,
-                                                       distance=distance, travel_time=travel_time))
+            connections.append(tr_db.AirportsConnection(airport_0=airport, airport_1=other_airport,
+                                                        distance=distance, travel_time=travel_time))
 
         with transaction.atomic():
-            tr_db.AirportConnection.objects.bulk_create(objs=connections)
+            airport.connections_update_time = datetime.now()
+            airport.save()
+            tr_db.AirportsConnection.objects.bulk_create(objs=connections)
 
     @staticmethod
     def _create_airports_connection_query(
@@ -156,13 +159,13 @@ class AirportsDAO:
     # TODO: should be optimized, remove redundant options
     @coordinates_decorator
     def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
-                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[tr_db.AirportConnection]:
+                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[tr_db.AirportsConnection]:
 
         closest_airports_0 = self.get_closest_distances_by_airport(p0, max_distance)
         closest_airports_1 = self.get_closest_distances_by_airport(p1, max_distance)
         potential_connections = list(product(closest_airports_0, closest_airports_1))
 
-        return tr_db.AirportConnection.objects.filter(self._create_airports_connection_query(potential_connections))
+        return tr_db.AirportsConnection.objects.filter(self._create_airports_connection_query(potential_connections))
 
 
 def main():
