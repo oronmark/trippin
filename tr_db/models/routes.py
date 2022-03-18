@@ -21,14 +21,6 @@ class Route(BaseModel):
         sort_attributes(self, lambda l: l.place_id, ['location_0', 'location_1'])
         super(Route, self).save(*args, **kwargs)
 
-
-    # def save(self, *args, **kwargs):
-    #     if self.location_0.place_id > self.location_1.place_id:
-    #         temp = self.location_0
-    #         self.location_0 = self.location_1
-    #         self.location_1 = temp
-    #     super(Route, self).save(*args, **kwargs)
-
     def __str__(self):
         return f'location_0={self.location_0.name}, location_1={self.location_1.name}'
 
@@ -52,9 +44,12 @@ class Transportation(BaseModel):
 class AirportLocation(BaseModel):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
                                 related_name='airport')
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
     airport_transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
                                                   related_name='airport_transportation')
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
+
+    class Meta:
+        unique_together = [('airport', 'location')]
 
 
 class RouteOption(BaseModel):
@@ -75,7 +70,12 @@ class FlightRoute(RouteOption):
                                               null=True, related_name='airport_location_1')
 
     class Meta:
-        unique_together = [('airport_location_0', 'airport_location_1'), ('airport_location_1', 'airport_location_0')]
+        unique_together = [('airport_location_0', 'airport_location_1')]
+
+    def save(self, *args, **kwargs):
+        sort_attributes(self, lambda al: (al.airport.iata_code, al.location.place_id),
+                        ['airport_location_0', 'airport_location_1'])
+        super(FlightRoute, self).save(*args, **kwargs)
 
 
 class DriveRoute(RouteOption):
