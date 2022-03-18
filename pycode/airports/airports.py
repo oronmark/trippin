@@ -82,10 +82,6 @@ class AirportsDAO:
     def get_distance_by_airport(self, c: Coordinates) -> List[AirportDataDistance]:
         return [AirportDataDistance(a, calculate_distance_on_map(a, c)) for a in self._airports]
 
-    # @coordinates_decorator
-    # def get_distance_by_airport_for_coordinate(self, c: Coordinates) -> List[AirportDataDistance]:
-    #     return self.get_distance_by_airport(c.lat, c.lng)
-
     def get_closest_distances_by_airport(self, c: Coordinates, max_distance: float) -> List[AirportDataDistance]:
         return [a_d for a_d in self.get_distance_by_airport(c) if a_d.distance <= max_distance]
 
