@@ -2,6 +2,7 @@ from .base_models import BaseModel
 from django.db import models
 from trippin.pycode.tr_utils import sort_attributes
 
+
 class Airport(BaseModel):
     id = models.CharField(primary_key=True, max_length=255, null=True)
     type = models.CharField(max_length=255, null=True)
