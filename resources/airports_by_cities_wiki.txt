@@ -1,0 +1,106 @@
+Beijing, China BJS IATA
+Beijing Capital International PEK IATA
+Beijing Daxing International PKX IATA
+Jakarta, Indonesia JKT IATA
+Soekarno-Hatta International CGK IATA
+Halim Perdanakusuma HLP IATA
+Osaka, Japan OSA IATA
+Kansai International KIX IATA
+Itami ITM IATA
+Sapporo, Japan SPK IATA
+New Chitose CTS IATA
+Okadama OKD IATA
+Seoul, South Korea SEL IATA
+Incheon International ICN IATA
+Gimpo International GMP IATA
+Tokyo, Japan TYO IATA
+Tokyo Narita NRT IATA
+Tokyo Haneda HND IATA
+Melbourne, Australia MEL IATA
+Tullamarine MEL IATA
+Avalon AVV IATA
+Essendon MEB IATA
+Shanghai, China SHA IATA
+Hongqiao Intl SHA IATA
+Pudong PVG IATA
+Bucharest, Romania BUH IATA
+Bucharest Otopeni OTP IATA
+Bucharest Baneasa BBU IATA
+London, United Kingdom LON IATA
+London Biggin Hill BQH IATA
+London City LCY IATA
+London Gatwick LGW IATA
+London Luton LTN IATA
+London Heathrow LHR IATA
+London-Liverpool Street Station (British Rail Terminal for STN) ZLS IATA
+London-Paddington Rail Terminal (British Rail Terminal for LHR) QQP IATA
+London-St Pancras Rail Terminal (Eurostar and British Rail Terminal for LTN) QQS IATA
+London Southend SEN IATA
+London Stansted STN IATA
+London-Victoria Station (British Rail Terminal for LGW) ZEP IATA
+London-Waterloo Rail Station (former Eurostar) QQW IATA
+Milan, Italy MIL IATA
+Malpensa International MXP IATA
+Linate LIN IATA
+Moscow, Russia MOW IATA
+Moscow Sheremetyevo SVO IATA
+Moscow Domodedovo DME IATA
+Moscow Vnukovo VKO IATA
+Paris, France PAR IATA
+Charles de Gaulle (Roissy) CDG IATA
+Paris Orly ORY IATA
+Le Bourget LBG IATA
+Rome, Italy ROM IATA
+Leonardo da Vinci International (Fiumicino) FCO IATA
+Giovan-Battista Pastine International (Ciampino) CIA IATA
+Stockholm, Sweden STO IATA
+Arlanda ARN IATA
+Skavsta AB (Nykoping) NYO IATA
+Bromma BMA IATA
+Chicago, United States of America- CHI IATA
+Chicago O'Hare International ORD IATA
+Chicago Midway International MDW IATA
+Detroit, United States of America- DTT IATA
+Detroit Metro Wayne County DTW IATA
+Willow Run/Ypsilanti YIP IATA
+Houston, United States of America QHO IATA
+Houston Bush Intercontinental IAH IATA
+Houston Hobby HOU IATA
+Los Angeles, United States of America QLA IATA
+Los Angeles International LAX IATA
+Ontario International ONT IATA
+John Wayne Orange County SNA IATA
+Burbank BUR IATA
+Miami, United States of America QMI IATA
+Miami International MIA IATA
+Ft. Lauderdale International FLL IATA
+Palm Beach International PBI IATA
+Montreal, Canada YMQ IATA
+Pierre-Elliott Trudeau International YUL IATA
+Central Station YMY IATA
+New York City, United States of America NYC IATA
+John F. Kennedy International JFK IATA
+Newark Liberty International EWR IATA
+La Guardia Airport LGA IATA
+Westchester County/White Plains Airport HPN IATA
+San Francisco Bay Area, United States of America QSF IATA
+San Francisco International SFO IATA
+Oakland International OAK IATA
+Norman Y. Mineta San José International SJC IATA
+Toronto, Canada YTO IATA
+Lester B. Pearson International YYZ IATA
+Billy Bishop Toronto City YTZ IATA
+Washington DC, United States of America WAS IATA
+Washington Dulles International Airport IAD IATA
+Ronald Reagan Washington National Airport DCA IATA
+Baltimore-Washington Thurgood Marshall International Airport BWI IATA
+Buenos Aires, Argentina BUE IATA
+Ezeiza International Airport EZE IATA
+Aeroparque Jorge Newbery AEP IATA
+Rio de Janeiro, Brazil RIO IATA
+Galeão - Antônio Carlos Jobim International Airport GIG IATA
+Aeroporto Santos Dumont SDU IATA
+São Paulo, Brazil SAO IATA
+Aeroporto Internacional Guarulhos GRU IATA
+Congonhas International Airport CGH IATA
+Viracopos International Airport VCP IATA

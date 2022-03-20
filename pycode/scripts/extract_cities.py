@@ -3,11 +3,12 @@ from pathlib import Path
 from typing import List, Optional, Dict
 
 import django
+
 django.setup()
 from pycode.tr_utils import read_from_csv_to_lists, write_to_csv_from_lists
 
-def parse_line(line: str) -> Optional[Dict[str, str]]:
 
+def parse_line(line: str) -> Optional[Dict[str, str]]:
     def norm_val(v: str):
         v = v.replace('\xa0', '')
         return v.replace('Â', '')
@@ -34,6 +35,30 @@ def parse_line(line: str) -> Optional[Dict[str, str]]:
     return None
 
 
+def parse_metro_line(line: str) -> List[str]:
+    # example: Beijing, China BJS IATA
+    i_comma = line.find(',')
+    city = line[:i_comma]
+    rest = line[i_comma:].split(' ')
+    country = rest[1]
+    code = rest[-2]
+
+    return [country, city, code]
+
+
+def parse_airport_line(line: str) -> List[str]:
+    # example: Soekarno-Hatta International CGK IATA
+    parts = line.split(' ')
+    parts.pop()
+    code = parts.pop()
+    name = ' '.join(parts)
+    return [name, code]
+
+
+def is_metro_line(line: str) -> bool:
+    return not line.find(',') == -1
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input-path', required=True, help='absolute path to airports file')
@@ -49,20 +74,39 @@ def main():
     if args.output_path and args.override:
         raise Exception("cannot override original file with new output-path")
 
+    # with open(path) as file_in:
+    #     lines = []
+    #     for line in file_in:
+    #         ans = parse_line(line)
+    #         if ans:
+    #             lines.append(ans)
+    #     header = [['city', 'county', 'code']]
+    #     x = list([[v['city'], v['country'], v['code']] for v in lines])
+    #     header.extend(x)
+    #     write_to_csv_from_lists(args.output_path, header)
+    #     print('end')
+
     with open(path) as file_in:
         lines = []
+        current_metro = None
+        airports = []
         for line in file_in:
-            ans = parse_line(line)
-            if ans:
-                lines.append(ans)
-        header = [['city', 'county', 'code']]
-        x = list([[v['city'], v['country'], v['code']] for v in lines])
-        header.extend(x)
-        write_to_csv_from_lists(args.output_path, header)
-        print('end')
+            if is_metro_line(line):
+                if current_metro:
+                    for a in airports:
+                        row = list(current_metro)
+                        row.append(a)
+                        lines.append(row)
+                current_metro = parse_metro_line(line)
+                airports = []
+            else:
+                airport = parse_airport_line(line)
+                airports.append(airport[-1])
 
+        header = [['country', 'city', 'metropolitan_code', 'airport_code']]
+        header.extend(lines)
 
-   # write_to_csv_from_lists(output_path, filtered_data)
+    write_to_csv_from_lists(args.output_path, header)
 
 
 if __name__ == '__main__':

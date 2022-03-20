@@ -17,6 +17,7 @@ class Airport(BaseModel):
     iata_code = models.CharField(max_length=3, null=True)
     connections_update_time = models.DateTimeField(default=None, null=True)
 
+
     class Meta:
         unique_together = ['iata_code', 'id']
 
