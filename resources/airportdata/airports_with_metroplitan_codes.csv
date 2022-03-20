@@ -1,0 +1,78 @@
+country,city,metropolitan_code,airport_code
+China,Beijing,BJS,PEK
+China,Beijing,BJS,PKX
+Indonesia,Jakarta,JKT,CGK
+Indonesia,Jakarta,JKT,HLP
+Japan,Osaka,OSA,KIX
+Japan,Osaka,OSA,ITM
+Japan,Sapporo,SPK,CTS
+Japan,Sapporo,SPK,OKD
+South,Seoul,SEL,ICN
+South,Seoul,SEL,GMP
+Japan,Tokyo,TYO,NRT
+Japan,Tokyo,TYO,HND
+Australia,Melbourne,MEL,MEL
+Australia,Melbourne,MEL,AVV
+Australia,Melbourne,MEL,MEB
+China,Shanghai,SHA,SHA
+China,Shanghai,SHA,PVG
+Romania,Bucharest,BUH,OTP
+Romania,Bucharest,BUH,BBU
+United Kingdom,London,LON,BQH
+United Kingdom,London,LON,LCY
+United Kingdom,London,LON,LGW
+United Kingdom,London,LON,LTN
+United Kingdom,London,LON,LHR
+United Kingdom,London,LON,ZLS
+United Kingdom,London,LON,QQP
+United Kingdom,London,LON,QQS
+United Kingdom,London,LON,SEN
+United Kingdom,London,LON,STN
+United Kingdom,London,LON,ZEP
+United Kingdom,London,LON,QQW
+Italy,Milan,MIL,MXP
+Italy,Milan,MIL,LIN
+Russia,Moscow,MOW,SVO
+Russia,Moscow,MOW,DME
+Russia,Moscow,MOW,VKO
+France,Paris,PAR,CDG
+France,Paris,PAR,ORY
+France,Paris,PAR,LBG
+Italy,Rome,ROM,FCO
+Italy,Rome,ROM,CIA
+Sweden,Stockholm,STO,ARN
+Sweden,Stockholm,STO,NYO
+Sweden,Stockholm,STO,BMA
+United States,Chicago,CHI,ORD
+United States,Chicago,CHI,MDW
+United States,Detroit,DTT,DTW
+United States,Detroit,DTT,YIP
+United States,Houston,QHO,IAH
+United States,Houston,QHO,HOU
+United States,Los Angeles,QLA,LAX
+United States,Los Angeles,QLA,ONT
+United States,Los Angeles,QLA,SNA
+United States,Los Angeles,QLA,BUR
+United States,Miami,QMI,MIA
+United States,Miami,QMI,FLL
+United States,Miami,QMI,PBI
+Canada,Montreal,YMQ,YUL
+Canada,Montreal,YMQ,YMY
+United States,New York City,NYC,JFK
+United States,New York City,NYC,EWR
+United States,New York City,NYC,LGA
+United States,New York City,NYC,HPN
+United States,San Francisco Bay Area,QSF,SFO
+United States,San Francisco Bay Area,QSF,OAK
+United States,San Francisco Bay Area,QSF,SJC
+Canada,Toronto,YTO,YYZ
+Canada,Toronto,YTO,YTZ
+United States,Washington DC,WAS,IAD
+United States,Washington DC,WAS,DCA
+United States,Washington DC,WAS,BWI
+Argentina,Buenos Aires,BUE,EZE
+Argentina,Buenos Aires,BUE,AEP
+Brazil,Rio de Janeiro,RIO,GIG
+Brazil,Rio de Janeiro,RIO,SDU
+Switzerland,Basel,EAP,BSL
+Mulhouse,France,EAP,MLH
