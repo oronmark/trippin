@@ -110,21 +110,21 @@ class RoutesEngine:
 
 
 def main():
-    airport_codes_subset_for_test = ['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG']
-    # airport_codes_subset_for_test = ['TLV']
+  #  airport_codes_subset_for_test = ['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG']
+    airport_codes_subset_for_test = ['TLV']
     amadeus = Client(
         client_id=os.environ['AMADEUS_API_KEY'],
         client_secret=os.environ['AMADEUS_API_SECRET'],
         hostname='test'
     )
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    # airports_dao = AirportsDAO(amadeus_client=amadeus)
-    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-    #
-    # # attempt to add airports routes for test airports
-    # for code in airport_codes_subset_for_test:
-    #     airport = tr_db.Airport.objects.filter(iata_code=code).get()
-    #     airports_dao.create_airport_connections(airport)
+    airports_dao = AirportsDAO(amadeus_client=amadeus)
+    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
+
+    # attempt to add airports routes for test airports
+    for code in airport_codes_subset_for_test:
+        airport = tr_db.Airport.objects.filter(iata_code=code).get()
+        airports_dao.create_airport_connections(airport)
 
     print('done')
 

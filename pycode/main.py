@@ -124,11 +124,11 @@ def main():
     #                                  country='IL',name='test_location_5')
     # test_location_5.save()
 
-    test_location_4 = tr_db.Location.objects.filter(name='test_location_4').get()
-    test_location_5 = tr_db.Location.objects.filter(name='test_location_5').get()
-    route = tr_db.Route(location_0=test_location_5, location_1=test_location_4)
-
-    route.save()
+    # test_location_4 = tr_db.Location.objects.filter(name='test_location_4').get()
+    # test_location_5 = tr_db.Location.objects.filter(name='test_location_5').get()
+    # route = tr_db.Route(location_0=test_location_5, location_1=test_location_4)
+    #
+    # route.save()
 
 if __name__ == '__main__':
     main()
