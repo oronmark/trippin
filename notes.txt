@@ -13,3 +13,10 @@ pip install -r requirements.txt
 
 activate venv windows
 C:\Users\Vicki\projects\trippin\venv\Scripts\activate.bat
+
+
+migraions info:
+from django.db.migrations.recorder import MigrationRecorder
+last_migration = MigrationRecorder.Migration.objects.latest('id')
+print(last_migration.app)
+print(last_migration.name)

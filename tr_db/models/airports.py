@@ -15,6 +15,8 @@ class Airport(BaseModel):
     municipality = models.CharField(max_length=255, null=True)
     gps_code = models.CharField(max_length=5, null=True)
     iata_code = models.CharField(max_length=3, null=True)
+    connections_update_time = models.DateTimeField(default=None, null=True)
+    metropolitan_iata_code = models.CharField(max_length=3, null=True)
 
     class Meta:
         unique_together = ['iata_code', 'id']
@@ -24,7 +26,7 @@ class Airport(BaseModel):
 
 
 # TODO consider unifying with route model
-class AirportConnection(BaseModel):
+class AirportsConnection(BaseModel):
     airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
     airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
     distance = models.IntegerField()
@@ -35,4 +37,4 @@ class AirportConnection(BaseModel):
 
     def save(self, *args, **kwargs):
         sort_attributes(self, lambda l: l.iata_code, ['airport_0', 'airport_1'])
-        super(AirportConnection, self).save(*args, **kwargs)
+        super(AirportsConnection, self).save(*args, **kwargs)
