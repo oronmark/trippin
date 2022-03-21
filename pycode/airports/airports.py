@@ -3,6 +3,9 @@ from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
 from itertools import product
 from datetime import datetime
+import logging
+
+logging.basicConfig(level=logging.INFO)
 import django
 
 django.setup()
@@ -11,13 +14,13 @@ from django.db import transaction
 from pycode.tr_enums import *
 from pycode.tr_path import tr_path
 from pycode.tr_utils import Coordinates, read_from_csv_to_dicts, convert_dict_to_dataclass, calculate_distance_on_map, \
-    calculate_flight_time_by_distance, coordinates_decorator
+    coordinates_decorator, calculate_flight_stats
 from trippin import tr_db
 from pycode.tr_utils import DEFAULT_BATCH_SIZE
 import logging
 from amadeus import Client, ResponseError
 from django.db.models import Q
-from .airport_data import AirportData, AirportDataDistance
+from airport_data import AirportData, AirportDataDistance, Destination
 
 
 # TODO add error handling
@@ -107,11 +110,15 @@ class AirportsDAO:
         # TODO: this implementation is temporary, this data will be pre-loaded with the dao
         return tr_db.Airport.objects.filter(id__in=[a.id for a in airports_data])
 
-    def get_destinations_iata_code(self, airport: tr_db.Airport) -> List[str]:
+    def get_destinations(self, airport: tr_db.Airport) -> List[Destination]:
         try:
-            response = self._amadeus_client.airport.direct_destinations.get(departureAirportCode=airport.iata_code)
-            print('gasgs')
-            return [a['iataCode'] for a in response.data]
+            response = self._amadeus_client.airport.direct_destinations.get(departureAirportCode=airport.iata_code).data
+            data = [convert_dict_to_dataclass(data=r,
+                                              class_type=Destination,
+                                              keys_converter=lambda k: 'iata_code' if k == 'iataCode' else k) for r in
+                    response]
+            return data
+
         except ResponseError as error:
             raise Exception(
                 f'An error occurred while trying to fetch all linked airports, airport_code: ${airport.iata_code}, '
@@ -135,23 +142,17 @@ class AirportsDAO:
     # TODO: remove duplicate  connections
     def create_airport_connections(self, airport: tr_db.Airport):
         logging.info(f'updating airport connections for {airport.iata_code}')
-        other_airports_iata_code = set()
-        for d in self.get_destinations_iata_code(airport):
-            other_airport_data = self.get_airport_by_iata_code(d)
-            if other_airport_data:
-                other_airports_iata_code.add(other_airport_data.iata_code)
-            else:
-                logging.info(f'Unable to create connection ({airport},{d}), '
-                             f'could not find airport in db')
+        destinations_codes = [d.iata_code for d in self.get_destinations(airport)]
+        existing_connections_codes = [a.iata_code for a in self._get_all_connected_airports(airport)]
 
-        existing_connections_codes = set([a.iata_code for a in self._get_all_connected_airports(airport)])
-        other_airports_iata_code -= existing_connections_codes
+        airports_query = (~Q(iata_code__in=existing_connections_codes)) & \
+                         (Q(iata_code__in=destinations_codes) | Q(metropolitan_iata_code__in=destinations_codes))
 
-        other_airports = tr_db.Airport.objects.filter(iata_code__in=other_airports_iata_code)
+        other_airports = tr_db.Airport.objects.filter(airports_query)
+        logging.info(f'adding {other_airports.count()} new connections for airport {airport}')
         connections = []
         for other_airport in other_airports:
-            distance = calculate_distance_on_map(airport, other_airport)
-            travel_time = calculate_flight_time_by_distance(distance)
+            distance, travel_time = calculate_flight_stats(airport, other_airport)
             connections.append(tr_db.AirportsConnection(airport_0=airport, airport_1=other_airport,
                                                         distance=distance, travel_time=travel_time))
 
@@ -187,20 +188,34 @@ class AirportsDAO:
         return tr_db.AirportsConnection.objects.filter(self._create_airports_connection_query(potential_connections))
 
 
-
-
 def main():
-    # new york
-    # "lat": 40.7127753,
-    # "lng": -74.0059728
-    p0 = Coordinates(lat=40.7127753, lng=-74.0059728)
+    # # new york
+    # # "lat": 40.7127753,
+    # # "lng": -74.0059728
+    # p0 = Coordinates(lat=40.7127753, lng=-74.0059728)
+    #
+    # # afula
+    # # "lat": 32.6104931,
+    # # "lng": 35.287922
+    # p1 = Coordinates(lat=32.6104931, lng=35.287922)
+    # airports_dao = AirportsDAO()
+    # ans = airports_dao.get_connected_airports(p0, p1)
 
-    # afula
-    # "lat": 32.6104931,
-    # "lng": 35.287922
-    p1 = Coordinates(lat=32.6104931, lng=35.287922)
-    airports_dao = AirportsDAO()
-    ans = airports_dao.get_connected_airports(p0, p1)
+    airport_codes_subset_for_test = ['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG']
+    #airport_codes_subset_for_test = ['TLV']
+    amadeus = Client(
+        client_id=os.environ['AMADEUS_API_KEY'],
+        client_secret=os.environ['AMADEUS_API_SECRET'],
+        hostname='test'
+    )
+    airports_dao = AirportsDAO(amadeus_client=amadeus)
+
+    # attempt to add airports routes for test airports
+    for code in airport_codes_subset_for_test:
+        airport = tr_db.Airport.objects.filter(iata_code=code).get()
+        airports_dao.create_airport_connections(airport)
+
+    print('done')
 
 
 if __name__ == '__main__':

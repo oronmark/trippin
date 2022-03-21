@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 
+# TODO: airports dao should be refactored and make this redundant
 @dataclass
 class AirportData:
     id: str = None
@@ -20,3 +21,11 @@ class AirportData:
 class AirportDataDistance:
     airport_data: AirportData
     distance: float
+
+
+@dataclass
+class Destination:
+    type: str = None
+    subtype: str = None
+    name: str = None
+    iata_code: str = None

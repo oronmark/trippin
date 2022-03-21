@@ -61,9 +61,12 @@ def write_to_csv_from_lists(path: Path, data: List[List[Any]], encoding: Optiona
 
 
 def convert_dict_to_dataclass(data: Dict[Any, Any], class_type,
+                              keys_converter: Optional[Callable[[Any], Any]] = None,
                               values_converter: Optional[Callable[[Any], Any]] = None) -> Any:
     # will work only for dataclass with default values
     obj = class_type()
+    if keys_converter:
+        data = {keys_converter(k): v for (k, v) in data.items()}
     for field in list(class_type.__dataclass_fields__.keys()):
         setattr(obj, field, data.get(field, None))
     if values_converter:
@@ -117,6 +120,13 @@ def calculate_flight_time(p0: Coordinates, p1: Coordinates) -> float:
 # this is not an exact answer yet mostly provides a rough estimation
 def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
+
+
+@coordinates_decorator
+def calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
+    dist = calculate_distance_on_map(p0, p1)
+    time = calculate_flight_time_by_distance(dist)
+    return dist, time
 
 
 def sort_attributes(obj, f, attributes):
