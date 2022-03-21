@@ -33,22 +33,45 @@ class RoutesEngine:
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
 
+    # # TODO: rename
+    # @coordinates_decorator
+    # def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
+    #         List[Transportation]:
+    #
+    #     transportations = []
+    #     directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
+    #                                                      (p1.lat, p1.lng),
+    #                                                      mode=transportation_type.get_string_value())
+    #
+    #     for d in directions_result:
+    #         result = d['legs'][0]
+    #         transportations.append(tr_db.Transportation(distance=result['distance']['value'],
+    #                                                     duration=result['duration']['value'],
+    #                                                     legs=1))
+    #     return transportations
+
+
     # TODO: rename
     @coordinates_decorator
     def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
             List[Transportation]:
 
         transportations = []
-        directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
-                                                         (p1.lat, p1.lng),
-                                                         mode=transportation_type.get_string_value())
+        try:
+            directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
+                                                             (p1.lat, p1.lng),
+                                                             mode=transportation_type.get_string_value())
 
-        for d in directions_result:
-            result = d['legs'][0]
-            transportations.append(tr_db.Transportation(distance=result['distance']['value'],
-                                                        duration=result['duration']['value'],
-                                                        legs=1))
-        return transportations
+            for d in directions_result:
+                result = d['legs'][0]
+                transportations.append(tr_db.Transportation(distance=result['distance']['value'],
+                                                            duration=result['duration']['value'],
+                                                            legs=1))
+            return transportations
+
+        except Exception  as error:
+            raise Exception(f'An error occurred while trying to retrieve directions data with error {error}')
+
 
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
