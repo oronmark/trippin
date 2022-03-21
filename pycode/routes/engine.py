@@ -1,8 +1,5 @@
-from typing import List, Optional
-import amadeus
+from typing import List
 import googlemaps
-from amadeus import Client, ResponseError
-import os
 import django
 import logging
 
@@ -10,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 django.setup()
 
 from trippin import tr_db
-from trippin.tr_db import Location, Route, Transportation, Airport, AirportsConnection, FlightRoute, AirportLocation, \
+from trippin.tr_db import Location, Route, Transportation, Airport,, FlightRoute, AirportLocation, \
     DriveRoute
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates, coordinates_decorator
