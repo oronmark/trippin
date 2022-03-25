@@ -29,3 +29,6 @@ class Destination:
     subtype: str = None
     name: str = None
     iata_code: str = None
+
+
+

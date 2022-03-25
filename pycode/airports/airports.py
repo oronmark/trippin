@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 from pathlib import Path
 from typing import Optional, List, Any, Dict, Tuple
@@ -20,7 +21,14 @@ from pycode.tr_utils import DEFAULT_BATCH_SIZE
 import logging
 from amadeus import Client, ResponseError
 from django.db.models import Q
-from airport_data import AirportData, AirportDataDistance, Destination
+from .airport_data import AirportData, AirportDataDistance, Destination
+
+
+# TODO: this is a helper class and should be removed
+@dataclass
+class AirportConnectionData:
+    airport_0: tr_db.Airport
+    airport_1: tr_db.Airport
 
 
 # TODO add error handling
@@ -177,15 +185,25 @@ class AirportsDAO:
 
     # TODO: filter out airports that does not fit (e.g not accessible by car)
     # TODO: should be optimized, remove redundant options
+    # TODO: this is all wrong! remove AirportConnectionData and find another way to calculate this
     @coordinates_decorator
     def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
-                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[tr_db.AirportsConnection]:
+                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[AirportConnectionData]:
 
         closest_airports_0 = self.get_closest_distances_by_airport(p0, max_distance)
         closest_airports_1 = self.get_closest_distances_by_airport(p1, max_distance)
+
+        closest_airports_0_iata_codes = set([al.airport_data.iata_code for al in closest_airports_0])
+
         potential_connections = list(product(closest_airports_0, closest_airports_1))
 
-        return tr_db.AirportsConnection.objects.filter(self._create_airports_connection_query(potential_connections))
+        airport_connections = tr_db.AirportsConnection.objects.filter(self._create_airports_connection_query(potential_connections))
+        connections_data = []
+        for c in airport_connections:
+            actual_airport_0, actual_airport_1 = (c.airport_0, c.airport_1) if c.airport_0.iata_code in closest_airports_0_iata_codes else (c.airport_1, c.airport_0)
+            connections_data.append(AirportConnectionData(airport_0=actual_airport_0, airport_1=actual_airport_1))
+
+        return connections_data
 
 
 def main():

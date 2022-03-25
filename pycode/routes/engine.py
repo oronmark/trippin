@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 django.setup()
 
 from trippin import tr_db
-from trippin.tr_db import Location, Route, Transportation, Airport,, FlightRoute, AirportLocation, \
+from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
     DriveRoute
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates, coordinates_decorator
@@ -50,7 +50,6 @@ class RoutesEngine:
     #                                                     legs=1))
     #     return transportations
 
-
     # TODO: rename
     @coordinates_decorator
     def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
@@ -69,9 +68,8 @@ class RoutesEngine:
                                                             legs=1))
             return transportations
 
-        except Exception  as error:
+        except Exception as error:
             raise Exception(f'An error occurred while trying to retrieve directions data with error {error}')
-
 
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
@@ -95,25 +93,28 @@ class RoutesEngine:
     # TODO: find another way to couple location_0 with airport_0 etc
     # TODO: to start, use a single option of connected airports
     # TODO: to start use a single option for AirportLocation
-    def create_route_option_flight(self, route: Route) -> FlightRoute:
+    def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
+
         connected_airports = self.airports_dao.get_connected_airports(route.location_0, route.location_1)
-        if not connected_airports:
-            raise Exception(f'Could not find any connected airports for route {route}')
+        flight_routes = []
+        for connection in connected_airports:
+            airport_location_options_0 = self.create_airport_location(airport=connection.airport_0,
+                                                                      location=route.location_0)
 
-        connection = connected_airports[0]
-        airport_location_options_0 = self.create_airport_location(airport=connection.airport_0, location=route.location_0)
-        airport_location_options_1 = self.create_airport_location(airport=connection.airport_1, location=route.location_1)
+            airport_location_options_1 = self.create_airport_location(airport=connection.airport_1,
+                                                                      location=route.location_1)
 
-        if not airport_location_options_0:
-            raise Exception(f'Could not find any transportation option from airport {connection.airport_0} '
-                            f'location: {route.location_0}')
+            if not airport_location_options_0:
+                raise Exception(f'Could not find any transportation option from airport {connection.airport_0} '
+                                f'location: {route.location_0}')
 
-        if not airport_location_options_1:
-            raise Exception(f'Could not find any transportation option from airport {connection.airport_1} '
-                            f'location: {route.location_1}')
+            if not airport_location_options_1:
+                raise Exception(f'Could not find any transportation option from airport {connection.airport_1} '
+                                f'location: {route.location_1}')
 
-        return FlightRoute(airport_location_0=airport_location_options_0[0],
-                           airport_location_1=airport_location_options_1[0])
+            flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
+                                             airport_location_1=airport_location_options_1[0]))
+        return flight_routes
 
     # # TODO: fix
     # def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):
@@ -130,7 +131,6 @@ class RoutesEngine:
 
 
 def main():
-
     print('done')
 
 
