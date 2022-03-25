@@ -16,21 +16,27 @@ from routes.engine import RoutesEngine
 from trippin.pycode import tr_utils
 
 
-# open questions
+###########################################################################################
+###################################### GENERAL NOTES ######################################
+###########################################################################################
+
+# open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
 # how can i mark a location as a reasonable place to reach an airport from
 
-# TODO
-# insert place to db with hard coded attributes ?
-# manually insert places and aspects
-# manually insert aspect to each location
-# calculate a rout
-# use directions for how to get from point a to point b
+# TODOS:
 # use distance matrix to eliminate places where you cant go by road
 # check avg travel time with transit and driving
+# change lng and lat for location to something more general (perhaps 3 coordinates with which represent borders)
+
+# misc:
 # if there are no waypoints in the directions request there will be only 1 leg in the route
-# there can be several routes in the result, for now i will take the first one
-# change lng and lat for location to somthing more general
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+
 def main():
     import googlemaps
     from datetime import datetime
@@ -101,8 +107,6 @@ def main():
     driving_route = routes_engine.create_route_option_driving(route)
     flight_route = routes_engine.create_route_option_flight(route)
     print('asfasf')
-
-
 
 
 if __name__ == '__main__':
