@@ -20,6 +20,11 @@ from trippin.pycode import tr_utils
 ###################################### GENERAL NOTES ######################################
 ###########################################################################################
 
+# next session:
+# write routes to db
+# add update time for locations
+# run airport connection for all (or most) airports
+
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
 # how can i mark a location as a reasonable place to reach an airport from
