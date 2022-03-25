@@ -32,12 +32,9 @@ class AirportConnectionData:
 
 
 # TODO add error handling
-# TODO normalize filed names
+# TODO normalize fields names
 # TODO check if getting closest airport by distance is a valid choice
-# TODO move max_distance const to somewhere else
 # TODO add iterative check in case there are no close airports AIRPORT_DISTANCE_INCREMENTS
-# TODO check if airport by coordinates is needed
-# TODO refactor init
 # TODO convert to singleton
 # TODO divide to levels: continent, region etc for faster results in get_closest_airports
 # TODO load once into memory and use a cache and convert to singleton
@@ -147,7 +144,6 @@ class AirportsDAO:
 
     # TODO: preform db transaction somewhere else
     # TODO: update airport update
-    # TODO: remove duplicate  connections
     def create_airport_connections(self, airport: tr_db.Airport):
         logging.info(f'updating airport connections for {airport.iata_code}')
         destinations_codes = [d.iata_code for d in self.get_destinations(airport)]
@@ -184,7 +180,6 @@ class AirportsDAO:
         return query
 
     # TODO: filter out airports that does not fit (e.g not accessible by car)
-    # TODO: should be optimized, remove redundant options
     # TODO: this is all wrong! remove AirportConnectionData and find another way to calculate this
     @coordinates_decorator
     def get_connected_airports(self, p0: Coordinates, p1: Coordinates,

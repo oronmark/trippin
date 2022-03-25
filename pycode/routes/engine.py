@@ -14,7 +14,6 @@ from pycode.tr_utils import Coordinates, coordinates_decorator
 
 
 # TODO: add error handling, logging and costume exceptions
-# TODO: remove optional
 # TODO: unify all transactions to a single function
 # TODO: add tracking bar
 # TODO: consider using distance matrix rather the direction
@@ -24,6 +23,7 @@ from pycode.tr_utils import Coordinates, coordinates_decorator
 # TODO: currently drive only and only first result, need to expand
 # TODO: to start, make another call to google api for arrival from location to airport, instead of using existing routes
 # TODO: remove airports dao from init, should be a singleton accessible to engine
+# TODO: expand transportations to more types and mark type
 class RoutesEngine:
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
@@ -32,23 +32,6 @@ class RoutesEngine:
 
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
-
-    # # TODO: rename
-    # @coordinates_decorator
-    # def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
-    #         List[Transportation]:
-    #
-    #     transportations = []
-    #     directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
-    #                                                      (p1.lat, p1.lng),
-    #                                                      mode=transportation_type.get_string_value())
-    #
-    #     for d in directions_result:
-    #         result = d['legs'][0]
-    #         transportations.append(tr_db.Transportation(distance=result['distance']['value'],
-    #                                                     duration=result['duration']['value'],
-    #                                                     legs=1))
-    #     return transportations
 
     # TODO: rename
     @coordinates_decorator
@@ -90,9 +73,6 @@ class RoutesEngine:
         return [AirportLocation(airport=airport, location=location, airport_transportation=t)
                 for t in transportations]
 
-    # TODO: find another way to couple location_0 with airport_0 etc
-    # TODO: to start, use a single option of connected airports
-    # TODO: to start use a single option for AirportLocation
     def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
 
         connected_airports = self.airports_dao.get_connected_airports(route.location_0, route.location_1)
