@@ -4,11 +4,13 @@ from django.db import models
 
 
 # TODO: add fields- country, region (perhaps enrich with maps api)
+# TODO: consider removing routes update time
 class Location(BaseModel):
     place_id = models.CharField(primary_key=True, max_length=255, null=True)
     lng = models.FloatField(null=False)
     lat = models.FloatField(null=False)
     country = models.CharField(null=False, max_length=2)
+    routes_update_time = models.DateTimeField(default=None, null=True)
 
     def __str__(self):
         return self.place_id
