@@ -98,7 +98,10 @@ def main():
     tel_aviv: Location = tr_db.Location.objects.filter(name='Tel-aviv').first()
     athens = tr_db.Location.objects.filter(name='Athens').first()
 
-    route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
+    # route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
+    # route.save()
+
+    route = tr_db.Route.objects.filter(location_0_id=tel_aviv.id, location_1_id=new_york.id)
 
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
     amadeus = Client(
@@ -111,6 +114,7 @@ def main():
 
     driving_route = routes_engine.create_route_option_driving(route)
     flight_route = routes_engine.create_route_option_flight(route)
+    flight_route[0].save()
     print('asfasf')
 
 

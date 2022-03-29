@@ -3,12 +3,13 @@ import googlemaps
 import django
 import logging
 
+
 logging.basicConfig(level=logging.INFO)
 django.setup()
 
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute
+    DriveRoute, RouteOption
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates, coordinates_decorator
 
@@ -62,10 +63,6 @@ class RoutesEngine:
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
         pass
 
-    # TODO: implement
-    def create_routes_options(self, route: Route) -> List[Transportation]:
-        pass
-
     # TODO: add transit to means of transportation
     def create_airport_location(self, airport: Airport, location: Location) -> List[AirportLocation]:
         transportations = self.create_transportations(airport, location, Transportation.Type.DRIVING)
@@ -95,6 +92,12 @@ class RoutesEngine:
             flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
                                              airport_location_1=airport_location_options_1[0]))
         return flight_routes
+
+    # def create_route_options(self, route: Route) -> List[RouteOption]:
+    #     flight_routes = self.create_route_option_flight(route)
+    #     drive_routes = self.create_route_option_driving(route)
+    #     x : List[RouteOption] = flight_routes + drive_routes
+    #     return flight_routes + drive_routes
 
     # # TODO: fix
     # def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):

@@ -73,6 +73,8 @@ class FlightRoute(RouteOption):
         unique_together = [('airport_location_0', 'airport_location_1')]
 
     def save(self, *args, **kwargs):
+        self.airport_location_0.save()
+        self.airport_location_1.save()
         sort_attributes(self, lambda al: (al.airport.iata_code, al.location.place_id),
                         ['airport_location_0', 'airport_location_1'])
         super(FlightRoute, self).save(*args, **kwargs)
