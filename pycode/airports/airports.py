@@ -101,7 +101,7 @@ class AirportsDAO:
         airports_data = cls._create_airports(airports_dicts)
         airports = []
         for a in airports_data:
-            db_airport = tr_db.Airport(id=a.id, type=a.type, name=a.name, latitude_deg=a.latitude_deg,
+            db_airport = tr_db.Airport(type=a.type, name=a.name, latitude_deg=a.latitude_deg,
                                        longitude_deg=a.longitude_deg,
                                        continent=a.continent, iso_region=a.iso_region, iso_country=a.iso_country,
                                        municipality=a.municipality, gps_code=a.gps_code, iata_code=a.iata_code)
