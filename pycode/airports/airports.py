@@ -165,12 +165,13 @@ class AirportsDAO:
             airport.save()
             tr_db.AirportsConnection.objects.bulk_create(objs=connections)
 
+    # TODO: consider changing the use of iata code to id in this case
     @staticmethod
     def _create_airports_connection_query(
             potential_connections: List[Tuple[AirportDataDistance, AirportDataDistance]]) -> Q:
-        queries = [Q(airport_0_id=p[0].airport_data.id, airport_1_id=p[1].airport_data.id)
+        queries = [Q(airport_0__iata_code=p[0].airport_data.iata_code, airport_1__iata_code=p[1].airport_data.iata_code)
                    for p in potential_connections]
-        symmetric_queries = [Q(airport_0_id=p[1].airport_data.id, airport_1_id=p[0].airport_data.id)
+        symmetric_queries = [Q(airport_0__iata_code=p[1].airport_data.iata_code, airport_1__iata_code=p[0].airport_data.iata_code)
                              for p in potential_connections]
         queries.extend(symmetric_queries)
         query = queries.pop()
