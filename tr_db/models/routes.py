@@ -25,7 +25,7 @@ class Route(BaseModel):
         return f'location_0={self.location_0.name}, location_1={self.location_1.name}'
 
 
-class Transportation(BaseModel):
+class Transportation(models.Model):
     class Type(Enum):
         DRIVING = 'driving',
         TRANSIT = 'transit',
@@ -38,24 +38,27 @@ class Transportation(BaseModel):
     duration = models.IntegerField(null=True)
     legs = models.IntegerField(null=True)
 
+    class Meta:
+        abstract = True
+
 
 # TODO: add several options of airport arrival (transit, driving)
 # TODO: rename
-class AirportLocation(BaseModel):
+class AirportLocation(BaseModel, Transportation):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
                                 related_name='airport')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
-    airport_transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
-                                                  related_name='airport_transportation')
+    # airport_transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
+    #                                               related_name='airport_transportation')
 
     class Meta:
         unique_together = [('airport', 'location')]
 
 
-class RouteOption(BaseModel):
+class RouteOption(BaseModel, Transportation):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
-    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
-                                          related_name='transportation')
+    # transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
+    #                                       related_name='transportation')
 
     class Meta:
         abstract = True

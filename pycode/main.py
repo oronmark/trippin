@@ -21,7 +21,7 @@ import googlemaps
 
 # next session:
 # write routes to db
-# add update time for locations
+# add update time for locations - done
 # run airport connection for all (or most) airports
 
 # open questions:
@@ -103,9 +103,13 @@ def main():
     route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
     driving_route = routes_engine.create_route_option_driving(route)
     flight_route = routes_engine.create_route_option_flight(route)
-    flight_route[0].save()
+    flight_route_0 = flight_route[0]
+    # flight_route[0].save()
 
-    print('done')
+    # what to write
+    # flight route -> airport locations -> (airport, , location, airport_transportation)
+    # whats not in db? airport_transportation, airport locatoins, flight route
+
 
 
 if __name__ == '__main__':
