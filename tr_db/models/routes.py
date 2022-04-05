@@ -55,7 +55,7 @@ class AirportLocation(BaseModel, Transportation):
         unique_together = [('airport', 'location')]
 
 
-class RouteOption(BaseModel, Transportation):
+class RouteOption(BaseModel):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
     # transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
     #                                       related_name='transportation')
@@ -83,9 +83,9 @@ class FlightRoute(RouteOption):
         super(FlightRoute, self).save(*args, **kwargs)
 
 
-class DriveRoute(RouteOption):
+class DriveRoute(RouteOption, Transportation):
     pass
 
 
-class TransitRoute(RouteOption):
+class TransitRoute(RouteOption, Transportation):
     pass
