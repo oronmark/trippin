@@ -30,6 +30,7 @@ import googlemaps
 # how can i mark a location as a reasonable place to reach an airport from
 
 # TODOS:
+# fix postgres auto delete
 # use distance matrix to eliminate places where you cant go by road
 # check avg travel time with transit and driving
 # change lng and lat for location to something more general (perhaps 3 coordinates with which represent borders)
@@ -42,6 +43,7 @@ import googlemaps
 ###########################################################################################
 
 def create_locations():
+    print('creating locations')
     thessaloniki = tr_db.Location(place_id='ChIJ7eAoFPQ4qBQRqXTVuBXnugk', lng=22.9900712, lat=40.6560448, country='GR',
                              name='Thessaloniki')
     tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999, country='IL',
@@ -63,6 +65,7 @@ def create_locations():
 
 
 def create_airport_connections(codes: List[str]):
+    print('creating airport connections')
     amadeus = Client(
         client_id=os.environ['AMADEUS_API_KEY'],
         client_secret=os.environ['AMADEUS_API_SECRET'],
@@ -75,6 +78,7 @@ def create_airport_connections(codes: List[str]):
 
 
 def populate_airports_db():
+    print('creating airports')
     amadeus = Client(
         client_id=os.environ['AMADEUS_API_KEY'],
         client_secret=os.environ['AMADEUS_API_SECRET'],
@@ -84,32 +88,36 @@ def populate_airports_db():
     airports_dao.dump_to_db()
 
 
+def build_db():
+    populate_airports_db()
+    create_locations()
+    create_airport_connections(['TLV', 'JFK'])
+
+
 def main():
 
-    # populate_airports_db()
-    # create_locations()
-    # create_airport_connections(['TLV', 'JFK'])
+    # build_db()
 
-    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    amadeus = Client(
-        client_id=os.environ['AMADEUS_API_KEY'],
-        client_secret=os.environ['AMADEUS_API_SECRET'],
-        hostname='test'
-    )
-    airports_dao = AirportsDAO(amadeus_client=amadeus)
-    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-
-    tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
-    new_york = tr_db.Location.objects.filter(name='New York').get()
-    route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
-    driving_route = routes_engine.create_route_option_driving(route)
-    flight_route = routes_engine.create_route_option_flight(route)
-    flight_route_0 = flight_route[0]
-    # flight_route[0].save()
-
-    # what to write
-    # flight route -> airport locations -> (airport, , location, airport_transportation)
-    # whats not in db? airport_transportation, airport locatoins, flight route
+    # gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    # amadeus = Client(
+    #     client_id=os.environ['AMADEUS_API_KEY'],
+    #     client_secret=os.environ['AMADEUS_API_SECRET'],
+    #     hostname='test'
+    # )
+    # airports_dao = AirportsDAO(amadeus_client=amadeus)
+    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
+    #
+    # tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
+    # new_york = tr_db.Location.objects.filter(name='New York').get()
+    # route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
+    # driving_route = routes_engine.create_route_option_driving(route)
+    # flight_route = routes_engine.create_route_option_flight(route)
+    # flight_route_0 = flight_route[0]
+    # # flight_route[0].save()
+    #
+    # # what to write
+    # # flight route -> airport locations -> (airport, , location, airport_transportation)
+    # # whats not in db? airport_transportation, airport locatoins, flight route
 
 
 
