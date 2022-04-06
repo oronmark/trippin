@@ -79,7 +79,8 @@ class RoutesEngine:
 
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
-        transportations = self.create_transportations(route.location_0, route.location_1, Transportation.Type.DRIVING)
+        # transportations = self.create_transportations(route.location_0, route.location_1, Transportation.Type.DRIVING)
+
         return [DriveRoute(route=route, transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
