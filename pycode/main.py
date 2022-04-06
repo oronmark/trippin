@@ -23,6 +23,7 @@ import googlemaps
 # write routes to db
 # add update time for locations - done
 # run airport connection for all (or most) airports
+# add actual flight time and distance to FlightRoute
 
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark

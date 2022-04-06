@@ -34,12 +34,33 @@ class RoutesEngine:
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
 
-    # TODO: rename
-    @coordinates_decorator
-    def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
-            List[Transportation]:
+    # # TODO: rename
+    # @coordinates_decorator
+    # def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
+    #         List[Transportation]:
+    #
+    #     transportations = []
+    #     try:
+    #         directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
+    #                                                          (p1.lat, p1.lng),
+    #                                                          mode=transportation_type.get_string_value())
+    #
+    #         for d in directions_result:
+    #             result = d['legs'][0]
+    #             transportations.append(tr_db.Transportation(distance=result['distance']['value'],
+    #                                                         duration=result['duration']['value'],
+    #                                                         legs=1))
+    #         return transportations
+    #
+    #     except Exception as error:
+    #         raise Exception(f'An error occurred while trying to retrieve directions data with error {error}')
 
-        transportations = []
+    # TODO: change from directions to distance matrix
+    @coordinates_decorator
+    def add_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type,
+                            route_object: RouteOption | AirportLocation):
+
+        # transportations = []
         try:
             directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
                                                              (p1.lat, p1.lng),
@@ -47,11 +68,12 @@ class RoutesEngine:
 
             for d in directions_result:
                 result = d['legs'][0]
-                transportations.append(tr_db.Transportation(distance=result['distance']['value'],
-                                                            duration=result['duration']['value'],
-                                                            legs=1))
-            return transportations
-
+                route_object.distance = result['distance']['value']
+                route_object.duration = result['duration']['value']
+                route_object.legs = 1
+                # transportations.append(tr_db.Transportation(distance=result['distance']['value'],
+                #                                             duration=result['duration']['value'],
+                #                                             legs=1))
         except Exception as error:
             raise Exception(f'An error occurred while trying to retrieve directions data with error {error}')
 
