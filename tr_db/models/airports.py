@@ -1,13 +1,13 @@
-from .base_models import BaseModel
+from .base_models import BaseModel, Coordinates
 from django.db import models
 from trippin.pycode.tr_utils import sort_attributes
 
 
-class Airport(BaseModel):
+class Airport(BaseModel, Coordinates):
     type = models.CharField(max_length=255, null=True)
     name = models.CharField(max_length=255, null=True)
-    latitude_deg = models.FloatField(null=False)
-    longitude_deg = models.FloatField(null=False)
+    # lat = models.FloatField(null=False)
+    # lng = models.FloatField(null=False)
     continent = models.CharField(max_length=2, null=True)
     iso_region = models.CharField(max_length=255, null=True)
     iso_country = models.CharField(max_length=2, null=True)

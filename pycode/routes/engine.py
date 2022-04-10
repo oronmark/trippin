@@ -11,7 +11,7 @@ from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
     DriveRoute, RouteOption
 from pycode.airports.airports import AirportsDAO
-from pycode.tr_utils import Coordinates, coordinates_decorator
+from pycode.tr_utils import Coordinates
 
 
 # TODO: add error handling, logging and costume exceptions
@@ -35,7 +35,6 @@ class RoutesEngine:
         pass
 
     # TODO: rename
-    @coordinates_decorator
     def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
             List[Transportation]:
 
