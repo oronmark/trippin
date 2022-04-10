@@ -25,6 +25,7 @@ from pycode.tr_utils import Coordinates
 # TODO: to start, make another call to google api for arrival from location to airport, instead of using existing routes
 # TODO: remove airports dao from init, should be a singleton accessible to engine
 # TODO: expand transportations to more types and mark type
+# TODO: allow possible tra transportation and not only one to one
 class RoutesEngine:
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
@@ -34,8 +35,7 @@ class RoutesEngine:
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
 
-    # TODO: rename
-    def create_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
+    def _create_gmaps_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
             List[Transportation]:
 
         transportations = []
@@ -56,7 +56,7 @@ class RoutesEngine:
 
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
-        transportations = self.create_transportations(route.location_0, route.location_1, Transportation.Type.DRIVING)
+        transportations = self._create_gmaps_transportations(route.location_0, route.location_1, Transportation.Type.DRIVING)
         return [DriveRoute(route=route, transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
@@ -64,32 +64,34 @@ class RoutesEngine:
 
     # TODO: add transit to means of transportation
     def create_airport_location(self, airport: Airport, location: Location) -> List[AirportLocation]:
-        transportations = self.create_transportations(airport, location, Transportation.Type.DRIVING)
+        transportations = self._create_gmaps_transportations(airport, location, Transportation.Type.DRIVING)
 
         return [AirportLocation(airport=airport, location=location, airport_transportation=t)
                 for t in transportations]
 
     def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
 
-        connected_airports = self._airports_dao.get_connected_airports(route.location_0, route.location_1)
+        connected_airports = self._airports_dao.get_airport_connections(route.location_0, route.location_1)
         flight_routes = []
-        for connection in connected_airports:
-            airport_location_options_0 = self.create_airport_location(airport=connection.airport_0,
+        for c in connected_airports:
+            airport_location_options_0 = self.create_airport_location(airport=c.airport_0,
                                                                       location=route.location_0)
 
-            airport_location_options_1 = self.create_airport_location(airport=connection.airport_1,
+            airport_location_options_1 = self.create_airport_location(airport=c.airport_1,
                                                                       location=route.location_1)
 
             if not airport_location_options_0:
-                raise Exception(f'Could not find any transportation option from airport {connection.airport_0} '
+                raise Exception(f'Could not find any transportation option from airport {c.airport_0} '
                                 f'location: {route.location_0}')
 
             if not airport_location_options_1:
-                raise Exception(f'Could not find any transportation option from airport {connection.airport_1} '
+                raise Exception(f'Could not find any transportation option from airport {c.airport_1} '
                                 f'location: {route.location_1}')
-            flight_route = FlightRoute(airport_location_0=airport_location_options_0[0], airport_location_1=airport_location_options_1[0])
-            # flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
-            #                                  airport_location_1=airport_location_options_1[0]))
+            transportation = tr_db.Transportation(distance=c.distance, duration=c.duration, legs=c.legs)
+
+            flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
+                                             airport_location_1=airport_location_options_1[0],
+                                             transportation=transportation))
         return flight_routes
 
     # def create_route_options(self, route: Route) -> List[RouteOption]:

@@ -29,7 +29,8 @@ class AirportsConnection(BaseModel):
     airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
     airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
     distance = models.IntegerField()  # in meters
-    travel_time = models.FloatField()  # in hours
+    duration = models.FloatField()  # in hours
+    legs = models.IntegerField(null=False, default=1)
 
     class Meta:
         unique_together = ('airport_0', 'airport_1')

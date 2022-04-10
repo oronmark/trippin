@@ -88,23 +88,23 @@ def main():
 
     # populate_airports_db()
     # create_locations()
-    create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
+    # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
 
-    # gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    # amadeus = Client(
-    #     client_id=os.environ['AMADEUS_API_KEY'],
-    #     client_secret=os.environ['AMADEUS_API_SECRET'],
-    #     hostname='test'
-    # )
-    # airports_dao = AirportsDAO(amadeus_client=amadeus)
-    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-    #
-    # tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
-    # new_york = tr_db.Location.objects.filter(name='New York').get()
-    # route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
-    # driving_route = routes_engine.create_route_option_driving(route)
-    # flight_route = routes_engine.create_route_option_flight(route)
-    # flight_route[0].save()
+    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    amadeus = Client(
+        client_id=os.environ['AMADEUS_API_KEY'],
+        client_secret=os.environ['AMADEUS_API_SECRET'],
+        hostname='test'
+    )
+    airports_dao = AirportsDAO(amadeus_client=amadeus)
+    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
+
+    tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
+    new_york = tr_db.Location.objects.filter(name='New York').get()
+    route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
+    driving_route = routes_engine.create_route_option_driving(route)
+    flight_route = routes_engine.create_route_option_flight(route)
+    flight_route[0].save()
 
     print('done')
 

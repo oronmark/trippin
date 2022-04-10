@@ -23,14 +23,14 @@ from amadeus import Client, ResponseError
 from django.db.models import Q
 
 
-# from .airport_data import AirportData, AirportDataDistance, Destination
-
-
 # TODO: this is a helper class and should be removed
 @dataclass
-class AirportConnectionData:
+class AirportConnectionData:  # this is used to set airport_0 and airport_1 to fit to the correct locations
     airport_0: tr_db.Airport
     airport_1: tr_db.Airport
+    distance: int
+    duration: float
+    legs: int
 
 
 @dataclass
@@ -169,8 +169,8 @@ class AirportsDAO:
 
     # TODO: filter out airports that does not fit (e.g not accessible by car)
     # TODO: this is all wrong! remove AirportConnectionData and find another way to calculate this
-    def get_connected_airports(self, p0: Coordinates, p1: Coordinates,
-                               max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[AirportConnectionData]:
+    def get_airport_connections(self, p0: Coordinates, p1: Coordinates,
+                                max_distance: Optional[int] = MAX_AIRPORT_DISTANCE) -> List[AirportConnectionData]:
 
         closest_airports_0 = self.get_closest_distances_by_airport(p0, max_distance)
         closest_airports_1 = self.get_closest_distances_by_airport(p1, max_distance)
@@ -186,6 +186,10 @@ class AirportsDAO:
             actual_airport_0, actual_airport_1 = (
                 c.airport_0, c.airport_1) if c.airport_0.iata_code in closest_airports_0_iata_codes else (
                 c.airport_1, c.airport_0)
-            connections_data.append(AirportConnectionData(airport_0=actual_airport_0, airport_1=actual_airport_1))
+            connections_data.append(AirportConnectionData(airport_0=actual_airport_0,
+                                                          airport_1=actual_airport_1,
+                                                          distance=c.distance,
+                                                          duration=c.duration,
+                                                          legs=1))
 
         return connections_data
