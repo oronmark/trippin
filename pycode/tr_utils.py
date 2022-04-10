@@ -5,7 +5,7 @@ import csv
 from math import sin, cos, sqrt, atan2, radians
 
 from trippin import tr_db
-from pycode.airports.airport_data import AirportData
+# from pycode.airports.airport_data import AirportData
 
 DEFAULT_ENCODING = 'UTF-8'
 DEFAULT_BATCH_SIZE = 500
@@ -17,18 +17,18 @@ class Coordinates:
     lng: float
 
 
-def coordinates_decorator(func):
-    def inner(*args):
-        def convert_to_coordinates(obj: Any) -> Any:
-            if isinstance(obj, tr_db.Location):
-                return Coordinates(lat=obj.lat, lng=obj.lng)
-            if isinstance(obj, tr_db.Airport):
-                return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
-            if isinstance(obj, AirportData):
-                return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
-            return obj
-        return func(*[convert_to_coordinates(a) for a in args])
-    return inner
+# def coordinates_decorator(func):
+#     def inner(*args):
+#         def convert_to_coordinates(obj: Any) -> Any:
+#             if isinstance(obj, tr_db.Location):
+#                 return Coordinates(lat=obj.lat, lng=obj.lng)
+#             if isinstance(obj, tr_db.Airport):
+#                 return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
+#             if isinstance(obj, AirportData):
+#                 return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
+#             return obj
+#         return func(*[convert_to_coordinates(a) for a in args])
+#     return inner
 
 
 def read_from_csv_to_lists(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[List[Any]]:
@@ -41,11 +41,14 @@ def read_from_csv_to_lists(path: Path, encoding: Optional[str] = DEFAULT_ENCODIN
         return data
 
 
-def read_from_csv_to_dicts(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[Dict[str, Any]]:
+def read_from_csv_to_dicts(path: Path, encoding: Optional[str] = DEFAULT_ENCODING,
+                           header_converter: Optional[Callable[[str], str]] = None) -> List[Dict[str, Any]]:
     data = []
     with open(path, newline='', encoding=encoding) as file:
         reader = csv.reader(file)
         header = next(reader)
+        if header_converter:
+            header = [header_converter(h) for h in header]
         for row in reader:
             if row:
                 dictified_row = {header[i]: row[i] for i in range(len(header))}
@@ -91,7 +94,7 @@ def convert_dict_to_dataclass(data: Dict[Any, Any], class_type,
 #     return distance
 
 
-@coordinates_decorator
+# @coordinates_decorator
 def calculate_distance_on_map(p0: Coordinates, p1: Coordinates) -> float:
     # this function calculates the distance between 2 points on a map in km
     # this was implemented explicitly because using the geopy.distance function was very slow
@@ -122,7 +125,6 @@ def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
 
 
-@coordinates_decorator
 def calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
     dist = calculate_distance_on_map(p0, p1)
     time = calculate_flight_time_by_distance(dist)

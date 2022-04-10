@@ -1,13 +1,13 @@
-from .base_models import BaseModel
+from .base_models import BaseModel, Coordinates
 from django.db import models
 from trippin.pycode.tr_utils import sort_attributes
 
 
-class Airport(BaseModel):
+class Airport(BaseModel, Coordinates):
     type = models.CharField(max_length=255, null=True)
     name = models.CharField(max_length=255, null=True)
-    latitude_deg = models.FloatField(null=False)
-    longitude_deg = models.FloatField(null=False)
+    # lat = models.FloatField(null=False)
+    # lng = models.FloatField(null=False)
     continent = models.CharField(max_length=2, null=True)
     iso_region = models.CharField(max_length=255, null=True)
     iso_country = models.CharField(max_length=2, null=True)
@@ -28,8 +28,9 @@ class Airport(BaseModel):
 class AirportsConnection(BaseModel):
     airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
     airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
-    distance = models.IntegerField()
-    travel_time = models.IntegerField()
+    distance = models.IntegerField()  # in meters
+    duration = models.FloatField()  # in hours
+    legs = models.IntegerField(null=False, default=1)
 
     class Meta:
         unique_together = ('airport_0', 'airport_1')

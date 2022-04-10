@@ -6,3 +6,11 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Coordinates(models.Model):
+    lat = models.FloatField()
+    lng = models.FloatField()
+
+    class Meta:
+        abstract = True

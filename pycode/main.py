@@ -21,7 +21,8 @@ import googlemaps
 
 # next session:
 # write routes to db
-# add update time for locations
+# add flight time to flight route
+# add update time for locations - done
 # run airport connection for all (or most) airports
 
 # open questions:
@@ -87,7 +88,7 @@ def main():
 
     # populate_airports_db()
     # create_locations()
-    # create_airport_connections(['TLV', 'JFK'])
+    # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
 
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
     amadeus = Client(
