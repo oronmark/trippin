@@ -28,8 +28,8 @@ from pycode.tr_utils import Coordinates
 class RoutesEngine:
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
-        self.gmaps_client = gmaps_client
-        self.airports_dao = airports_dao
+        self._gmaps_client = gmaps_client
+        self._airports_dao = airports_dao
 
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
@@ -40,9 +40,9 @@ class RoutesEngine:
 
         transportations = []
         try:
-            directions_result = self.gmaps_client.directions((p0.lat, p0.lng),
-                                                             (p1.lat, p1.lng),
-                                                             mode=transportation_type.get_string_value())
+            directions_result = self._gmaps_client.directions((p0.lat, p0.lng),
+                                                              (p1.lat, p1.lng),
+                                                              mode=transportation_type.get_string_value())
 
             for d in directions_result:
                 result = d['legs'][0]
@@ -71,7 +71,7 @@ class RoutesEngine:
 
     def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
 
-        connected_airports = self.airports_dao.get_connected_airports(route.location_0, route.location_1)
+        connected_airports = self._airports_dao.get_connected_airports(route.location_0, route.location_1)
         flight_routes = []
         for connection in connected_airports:
             airport_location_options_0 = self.create_airport_location(airport=connection.airport_0,
@@ -87,9 +87,9 @@ class RoutesEngine:
             if not airport_location_options_1:
                 raise Exception(f'Could not find any transportation option from airport {connection.airport_1} '
                                 f'location: {route.location_1}')
-
-            flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
-                                             airport_location_1=airport_location_options_1[0]))
+            flight_route = FlightRoute(airport_location_0=airport_location_options_0[0], airport_location_1=airport_location_options_1[0])
+            # flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
+            #                                  airport_location_1=airport_location_options_1[0]))
         return flight_routes
 
     # def create_route_options(self, route: Route) -> List[RouteOption]:

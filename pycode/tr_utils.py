@@ -125,7 +125,6 @@ def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
 
 
-# @coordinates_decorator
 def calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
     dist = calculate_distance_on_map(p0, p1)
     time = calculate_flight_time_by_distance(dist)
