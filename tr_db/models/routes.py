@@ -26,10 +26,10 @@ class Route(BaseModel):
 
 
 class Transportation(BaseModel):
-    class Type(Enum):
+    class Type(models.TextChoices):
         DRIVING = 'driving',
         TRANSIT = 'transit',
-        FLIGHT = 'flight'
+        # FLIGHT = 'flight'
 
         def get_string_value(self):
             return self.value[0]
@@ -37,6 +37,7 @@ class Transportation(BaseModel):
     distance = models.IntegerField(null=True)
     duration = models.IntegerField(null=True)
     legs = models.IntegerField(null=True)
+    type = models.CharField(max_length=255, choices=Type.choices, default=Type.DRIVING)
 
 
 # TODO: add several options of airport arrival (transit, driving)
