@@ -42,7 +42,7 @@ class RoutesEngine:
         try:
             directions_result = self._gmaps_client.directions((p0.lat, p0.lng),
                                                               (p1.lat, p1.lng),
-                                                              mode=transportation_type.get_string_value())
+                                                              mode=transportation_type)
 
             for d in directions_result:
                 result = d['legs'][0]
@@ -87,7 +87,8 @@ class RoutesEngine:
             if not airport_location_options_1:
                 raise Exception(f'Could not find any transportation option from airport {c.airport_1} '
                                 f'location: {route.location_1}')
-            transportation = tr_db.Transportation(distance=c.distance, duration=c.duration, legs=c.legs)
+            transportation = tr_db.Transportation(distance=c.distance, duration=c.duration,
+                                                  legs=c.legs, type=Transportation.Type.FLIGHT)
 
             flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
                                              airport_location_1=airport_location_options_1[0],

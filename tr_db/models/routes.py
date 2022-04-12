@@ -29,7 +29,7 @@ class Transportation(BaseModel):
     class Type(models.TextChoices):
         DRIVING = 'driving',
         TRANSIT = 'transit',
-        # FLIGHT = 'flight'
+        FLIGHT = 'flight'
 
         def get_string_value(self):
             return self.value[0]
