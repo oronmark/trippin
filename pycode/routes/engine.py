@@ -3,7 +3,6 @@ import googlemaps
 import django
 import logging
 
-
 logging.basicConfig(level=logging.INFO)
 django.setup()
 
@@ -35,7 +34,8 @@ class RoutesEngine:
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
 
-    def _create_gmaps_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
+    def _create_gmaps_transportations(self, p0: Coordinates, p1: Coordinates,
+                                      transportation_type: Transportation.Type) -> \
             List[Transportation]:
 
         transportations = []
@@ -56,7 +56,8 @@ class RoutesEngine:
 
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
-        transportations = self._create_gmaps_transportations(route.location_0, route.location_1, Transportation.Type.DRIVING)
+        transportations = self._create_gmaps_transportations(route.location_0, route.location_1,
+                                                             Transportation.Type.DRIVING)
         return [DriveRoute(route=route, transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
@@ -80,13 +81,11 @@ class RoutesEngine:
             airport_location_options_1 = self.create_airport_location(airport=c.airport_1,
                                                                       location=route.location_1)
 
-            if not airport_location_options_0:
-                raise Exception(f'Could not find any transportation option from airport {c.airport_0} '
-                                f'location: {route.location_0}')
+            if not airport_location_options_0 or not airport_location_options_1:
+                logging.info(f'Unable to calculate transportation from for airport, location for '
+                             f'({c.airport_0}, {route.location_0.name}) or ({c.airport_1}, {route.location_1.name})')
+                continue
 
-            if not airport_location_options_1:
-                raise Exception(f'Could not find any transportation option from airport {c.airport_1} '
-                                f'location: {route.location_1}')
             transportation = tr_db.Transportation(distance=c.distance, duration=c.duration,
                                                   legs=c.legs, type=Transportation.Type.FLIGHT)
 

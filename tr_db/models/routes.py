@@ -52,6 +52,9 @@ class AirportLocation(BaseModel):
     class Meta:
         unique_together = [('airport', 'location')]
 
+    def __str__(self):
+        return f'airport={self.airport.iata_code}, location={self.location.name}'
+
 
 class RouteOption(BaseModel):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
