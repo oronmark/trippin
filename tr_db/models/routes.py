@@ -26,7 +26,7 @@ class Route(BaseModel):
 
 
 class Transportation(BaseModel):
-    class Type(Enum):
+    class Type(models.TextChoices):
         DRIVING = 'driving',
         TRANSIT = 'transit',
         FLIGHT = 'flight'
@@ -37,6 +37,7 @@ class Transportation(BaseModel):
     distance = models.IntegerField(null=True)
     duration = models.IntegerField(null=True)
     legs = models.IntegerField(null=True)
+    type = models.CharField(max_length=255, choices=Type.choices, default=Type.DRIVING)
 
 
 # TODO: add several options of airport arrival (transit, driving)
@@ -50,6 +51,9 @@ class AirportLocation(BaseModel):
 
     class Meta:
         unique_together = [('airport', 'location')]
+
+    def __str__(self):
+        return f'airport={self.airport.iata_code}, location={self.location.name}'
 
 
 class RouteOption(BaseModel):

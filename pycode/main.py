@@ -28,11 +28,13 @@ import googlemaps
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
 # how can i mark a location as a reasonable place to reach an airport from
+# removed duplicated iata_code from airports csv. should it be enough or should the key be id (for future files)
 
 # TODOS:
 # use distance matrix to eliminate places where you cant go by road
 # check avg travel time with transit and driving
 # change lng and lat for location to something more general (perhaps 3 coordinates with which represent borders)
+# include fairies in driving and transit calculations (i.e athens to lesbos)
 
 # misc:
 # if there are no waypoints in the directions request there will be only 1 leg in the route
@@ -101,10 +103,12 @@ def main():
 
     tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
     new_york = tr_db.Location.objects.filter(name='New York').get()
-    route = tr_db.Route(location_0=tel_aviv, location_1=new_york)
-    driving_route = routes_engine.create_route_option_driving(route)
+    athens = tr_db.Location.objects.filter(name='Athens').get()
+    agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
+    route = tr_db.Route(location_0=athens, location_1=agios_ionnis)
+    # driving_route = routes_engine.create_route_option_driving(route)
     flight_route = routes_engine.create_route_option_flight(route)
-    flight_route[0].save()
+    # flight_route[0].save()
 
     print('done')
 
