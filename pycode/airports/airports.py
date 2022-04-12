@@ -144,7 +144,7 @@ class AirportsDAO:
         for other_airport in other_airports:
             distance, travel_time = calculate_flight_stats(airport, other_airport)
             connections.append(tr_db.AirportsConnection(airport_0=airport, airport_1=other_airport,
-                                                        distance=distance, travel_time=travel_time))
+                                                        distance=distance, duration=travel_time))
 
         with transaction.atomic():
             airport.connections_update_time = datetime.now()

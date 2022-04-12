@@ -28,6 +28,7 @@ import googlemaps
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
 # how can i mark a location as a reasonable place to reach an airport from
+# currently removed duplicated iata_code from airports csv. should it be enough or should the key be id
 
 # TODOS:
 # use distance matrix to eliminate places where you cant go by road

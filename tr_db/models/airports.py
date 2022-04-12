@@ -6,19 +6,14 @@ from trippin.pycode.tr_utils import sort_attributes
 class Airport(BaseModel, Coordinates):
     type = models.CharField(max_length=255, null=True)
     name = models.CharField(max_length=255, null=True)
-    # lat = models.FloatField(null=False)
-    # lng = models.FloatField(null=False)
     continent = models.CharField(max_length=2, null=True)
     iso_region = models.CharField(max_length=255, null=True)
     iso_country = models.CharField(max_length=2, null=True)
     municipality = models.CharField(max_length=255, null=True)
     gps_code = models.CharField(max_length=5, null=True)
-    iata_code = models.CharField(max_length=3, null=True)
+    iata_code = models.CharField(max_length=3, null=True, unique=True)
     connections_update_time = models.DateTimeField(default=None, null=True)
     metropolitan_iata_code = models.CharField(max_length=3, null=True)
-
-    class Meta:
-        unique_together = ['iata_code', 'id']
 
     def __str__(self):
         return self.iata_code

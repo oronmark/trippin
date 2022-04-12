@@ -40,3 +40,7 @@ if 'setup' in dir(django): django.setup()
 from trippin import tr_db
 
 
+# removed airports
+IZA, LHS, LMC
+
+
