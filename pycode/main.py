@@ -31,6 +31,7 @@ from django.db import transaction
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
 # how can i mark a location as a reasonable place to reach an airport from
 # removed duplicated iata_code from airports csv. should it be enough or should the key be id (for future files)
+# how should models of pairs of same model should be handled to avoid repetition?
 
 # TODOS:
 # use distance matrix to eliminate places where you cant go by road
@@ -98,44 +99,43 @@ def delete_db():
 
 def main():
 
-    populate_airports_db()
-    create_locations()
-    create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
+    # populate_airports_db()
+    # create_locations()
+    # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
     # delete_db()
 
-    # gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    # amadeus = Client(
-    #     client_id=os.environ['AMADEUS_API_KEY'],
-    #     client_secret=os.environ['AMADEUS_API_SECRET'],
-    #     hostname='test'
-    # )
-    # airports_dao = AirportsDAO(amadeus_client=amadeus)
-    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-    #
-    # tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
-    # new_york = tr_db.Location.objects.filter(name='New York').get()
-    # athens = tr_db.Location.objects.filter(name='Athens').get()
-    # agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
-    # # route = tr_db.Route(location_0=athens, location_1=agios_ionnis)
-    # # driving_route = routes_engine.create_route_option_driving(route)
-    # # flight_route = routes_engine.create_route_option_flight(route)
-    # # flight_route[0].save()
-    # route, route_options = routes_engine.create_route(athens, agios_ionnis)
-    #
-    # opt = route_options[0]
-    # with transaction.atomic():
-    #     route.save()
-    #     if isinstance(opt, tr_db.FlightRoute):
-    #         opt.transportation.save()
-    #         opt.airport_location_0.airport_transportation.save()
-    #         opt.airport_location_0.save()
-    #         opt.airport_location_1.airport_transportation.save()
-    #         opt.airport_location_1.save()
-    #         opt.save()
-    #     if isinstance(opt, tr_db.DriveRoute):
-    #         opt.transportation.save()
-    #         opt.save()
+    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    amadeus = Client(
+        client_id=os.environ['AMADEUS_API_KEY'],
+        client_secret=os.environ['AMADEUS_API_SECRET'],
+        hostname='test'
+    )
+    airports_dao = AirportsDAO(amadeus_client=amadeus)
+    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
 
+    tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
+    new_york = tr_db.Location.objects.filter(name='New York').get()
+    athens = tr_db.Location.objects.filter(name='Athens').get()
+    agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
+    # route = tr_db.Route(location_0=athens, location_1=agios_ionnis)
+    # driving_route = routes_engine.create_route_option_driving(route)
+    # flight_route = routes_engine.create_route_option_flight(route)
+    # flight_route[0].save()
+    route, route_options = routes_engine.create_route(athens, agios_ionnis)
+
+    opt = route_options[0]
+    with transaction.atomic():
+        route.save()
+        if isinstance(opt, tr_db.FlightRoute):
+            opt.transportation.save()
+            opt.airport_location_0.airport_transportation.save()
+            opt.airport_location_0.save()
+            opt.airport_location_1.airport_transportation.save()
+            opt.airport_location_1.save()
+            opt.save()
+        if isinstance(opt, tr_db.DriveRoute):
+            opt.transportation.save()
+            opt.save()
 
     print('done')
 

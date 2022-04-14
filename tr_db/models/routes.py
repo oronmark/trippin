@@ -1,4 +1,4 @@
-from .base_models import BaseModel
+from .base_models import TRBaseModel
 from django.db import models
 from .locations import Location
 from .airports import Airport
@@ -8,7 +8,7 @@ from trippin.pycode.tr_utils import sort_attributes
 # TODO: what should a rout stand for ? the time it takes to get from  point a to point b? for poc yes
 # TODO: add mixed transportation type (i.e driving and transit)
 # TODO: fix nullable fields
-class Route(BaseModel):
+class Route(TRBaseModel):
     location_0 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_0')
     location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
 
@@ -24,7 +24,7 @@ class Route(BaseModel):
         return f'location_0={self.location_0.name}, location_1={self.location_1.name}'
 
 
-class Transportation(BaseModel):
+class Transportation(TRBaseModel):
     class Type(models.TextChoices):
         DRIVING = 'driving',
         TRANSIT = 'transit',
@@ -41,7 +41,7 @@ class Transportation(BaseModel):
 
 # TODO: add several options of airport arrival (transit, driving)
 # TODO: rename
-class AirportLocation(BaseModel):
+class AirportLocation(TRBaseModel):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
                                 related_name='airport')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
@@ -55,8 +55,8 @@ class AirportLocation(BaseModel):
         return f'airport={self.airport.iata_code}, location={self.location.name}'
 
 
-class RouteOption(BaseModel):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
+class RouteOption(TRBaseModel):
+    # route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
     transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
                                           related_name='transportation')
 
@@ -71,20 +71,23 @@ class FlightRoute(RouteOption):
                                               null=True, related_name='airport_location_0')
     airport_location_1 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
                                               null=True, related_name='airport_location_1')
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_flight')
+
 
     class Meta:
         unique_together = [('airport_location_0', 'airport_location_1')]
 
     def save(self, *args, **kwargs):
         sort_attributes(self, lambda al: (al.airport.iata_code, al.location.place_id),
-                        ['airport_location_0', 'airrport_location_1'])
+                        ['airport_location_0', 'airport_location_1'])
         super(FlightRoute, self).save(*args, **kwargs)
 
 
 class DriveRoute(RouteOption):
-    pass
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_drive')
 
 
 class TransitRoute(RouteOption):
-    pass
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_transit')
+
 
