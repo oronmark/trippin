@@ -91,14 +91,19 @@ class RoutesEngine:
 
             flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
                                              airport_location_1=airport_location_options_1[0],
-                                             transportation=transportation))
+                                             transportation=transportation,
+                                             route=route))
         return flight_routes
 
-    # def create_route_options(self, route: Route) -> List[RouteOption]:
-    #     flight_routes = self.create_route_option_flight(route)
-    #     drive_routes = self.create_route_option_driving(route)
-    #     x : List[RouteOption] = flight_routes + drive_routes
-    #     return flight_routes + drive_routes
+    def create_route_options(self, route: Route) -> List[RouteOption]:
+        flight_routes = self.create_route_option_flight(route)
+        drive_routes = self.create_route_option_driving(route)
+        return flight_routes + drive_routes
+
+    def create_route(self, location_0: Location, location_1: Location) -> (Route, List[RouteOption]):
+        new_route = tr_db.Route(location_0=location_0, location_1=location_1)
+        route_options = self.create_route_options(new_route)
+        return new_route, route_options
 
     # # TODO: fix
     # def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):
@@ -113,10 +118,3 @@ class RoutesEngine:
     #
     #     return routes, route_types
 
-
-def main():
-    print('done')
-
-
-if __name__ == '__main__':
-    main()

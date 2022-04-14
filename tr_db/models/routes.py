@@ -57,7 +57,7 @@ class AirportLocation(BaseModel):
 
 
 class RouteOption(BaseModel):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
+    #route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
     transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
                                           related_name='transportation')
 
@@ -73,6 +73,8 @@ class FlightRoute(RouteOption):
     airport_location_1 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
                                               null=True, related_name='airport_location_1')
 
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_flight')
+
     class Meta:
         unique_together = [('airport_location_0', 'airport_location_1')]
 
@@ -85,8 +87,9 @@ class FlightRoute(RouteOption):
 
 
 class DriveRoute(RouteOption):
-    pass
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
 
 
 class TransitRoute(RouteOption):
-    pass
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=True, related_name='route_options_transit')
+

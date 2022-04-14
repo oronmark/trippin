@@ -13,6 +13,7 @@ import datetime
 from routes.engine import RoutesEngine
 import os
 import googlemaps
+from django.db import transaction
 
 
 ###########################################################################################
@@ -20,10 +21,11 @@ import googlemaps
 ###########################################################################################
 
 # next session:
-# write routes to db
+# write routes to db - on it
 # add flight time to flight route
 # add update time for locations - done
 # run airport connection for all (or most) airports
+# fix no rows when using reverse lookup
 
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
@@ -86,11 +88,20 @@ def populate_airports_db():
     airports_dao.dump_to_db()
 
 
+def delete_db():
+    tr_db.Transportation.objects.all().delete()
+    tr_db.AirportsConnection.objects.all().delete()
+    tr_db.FlightRoute.objects.all().delete()
+    tr_db.DriveRoute.objects.all().delete()
+    tr_db.Route.objects.all().delete()
+
+
 def main():
 
     # populate_airports_db()
     # create_locations()
     # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
+    # delete_db()
 
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
     amadeus = Client(
@@ -105,10 +116,26 @@ def main():
     new_york = tr_db.Location.objects.filter(name='New York').get()
     athens = tr_db.Location.objects.filter(name='Athens').get()
     agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
-    route = tr_db.Route(location_0=athens, location_1=agios_ionnis)
+    # route = tr_db.Route(location_0=athens, location_1=agios_ionnis)
     # driving_route = routes_engine.create_route_option_driving(route)
-    flight_route = routes_engine.create_route_option_flight(route)
+    # flight_route = routes_engine.create_route_option_flight(route)
     # flight_route[0].save()
+    route, route_options = routes_engine.create_route(athens, agios_ionnis)
+
+    opt = route_options[0]
+    with transaction.atomic():
+        route.save()
+        if isinstance(opt, tr_db.FlightRoute):
+            opt.transportation.save()
+            opt.airport_location_0.airport_transportation.save()
+            opt.airport_location_0.save()
+            opt.airport_location_1.airport_transportation.save()
+            opt.airport_location_1.save()
+            opt.save()
+        if isinstance(opt, tr_db.DriveRoute):
+            opt.transportation.save()
+            opt.save()
+
 
     print('done')
 
