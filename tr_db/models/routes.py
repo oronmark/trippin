@@ -75,10 +75,10 @@ class BaseRoute(models.Model):
 # TODO: consider adding details regarding multi leg flights
 # TODO: make nullable false
 class FlightRoute(BaseRoute):
-    airport_location_0 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
-                                              null=True, related_name='airport_location_0')
-    airport_location_1 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
-                                              null=True, related_name='airport_location_1')
+    airport_location_0 = models.ForeignKey(AirportLocation, on_delete=models.CASCADE,
+                                           null=True, related_name='airport_location_0')
+    airport_location_1 = models.ForeignKey(AirportLocation, on_delete=models.CASCADE,
+                                           null=True, related_name='airport_location_1')
 
     class Meta:
         unique_together = [('airport_location_0', 'airport_location_1')]
@@ -95,4 +95,3 @@ class DriveRoute(BaseRoute):
 
 class TransitRoute(BaseRoute):
     pass
-
