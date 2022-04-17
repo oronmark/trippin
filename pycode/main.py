@@ -12,6 +12,8 @@ from routes.engine import RoutesEngine
 import os
 import googlemaps
 from django.db import transaction
+from django.db.models import Q
+from functools import reduce
 
 
 ###########################################################################################
@@ -46,13 +48,18 @@ from django.db import transaction
 
 def create_locations():
     thessaloniki = tr_db.Location(place_id='ChIJ7eAoFPQ4qBQRqXTVuBXnugk', lng=22.9900712, lat=40.6560448, country='GR',
-                             name='Thessaloniki')
-    tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999, country='IL',
-                             name='Tel-aviv')
-    athens = tr_db.Location(place_id='ChIJ8UNwBh-9oRQR3Y1mdkU1Nic', lng=23.7275388, lat=37.9838096, country='GR', name='Athens')
-    agios_ioannis = tr_db.Location(place_id='ChIJDcrIHKQPpxQRgkoh91DnINA', lng=23.1609304, lat=39.4167434, country='GR', name='Agios Ioannis')
-    litochoro = tr_db.Location(place_id='ChIJpZgb894OWBMR-ui9w_SD-oo', lng=22.5026117, lat=40.1029473, country='GR', name='Litochoro')
-    zagorochoria = tr_db.Location(place_id='ChIJBXfS0xy4WxMRjXxw7RNOEfc', lng=20.8552919, lat=39.8799973, country='GR',name='Zaguri')
+                                  name='Thessaloniki')
+    tel_aviv = tr_db.Location(place_id='ChIJH3w7GaZMHRURkD-WwKJy-8E', lng=34.78176759999999, lat=32.0852999,
+                              country='IL',
+                              name='Tel-aviv')
+    athens = tr_db.Location(place_id='ChIJ8UNwBh-9oRQR3Y1mdkU1Nic', lng=23.7275388, lat=37.9838096, country='GR',
+                            name='Athens')
+    agios_ioannis = tr_db.Location(place_id='ChIJDcrIHKQPpxQRgkoh91DnINA', lng=23.1609304, lat=39.4167434, country='GR',
+                                   name='Agios Ioannis')
+    litochoro = tr_db.Location(place_id='ChIJpZgb894OWBMR-ui9w_SD-oo', lng=22.5026117, lat=40.1029473, country='GR',
+                               name='Litochoro')
+    zagorochoria = tr_db.Location(place_id='ChIJBXfS0xy4WxMRjXxw7RNOEfc', lng=20.8552919, lat=39.8799973, country='GR',
+                                  name='Zaguri')
     new_york = tr_db.Location(place_id='ChIJOwg_06VPwokRYv534QaPC8g', lng=-74.0059728, lat=40.7127753, country='US',
                               name='New York')
 
@@ -96,8 +103,13 @@ def delete_db():
     tr_db.RouteOption.objects.all().delete()
 
 
-def main():
+# TODO: change input to flight route and not airport location
+def create_airport_location_query(airport_locations: List[tr_db.AirportLocation]):
+    airport_location_queries = [Q(airport_id=al.airport_id, location_id=al.location_id) for al in airport_locations]
+    return reduce(lambda alq0, alq1: alq0 | alq1, airport_location_queries)
 
+
+def main():
     # populate_airports_db()
     # create_locations()
     # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
@@ -120,23 +132,59 @@ def main():
     # driving_route = routes_engine.create_route_option_driving(route)
     # flight_route = routes_engine.create_route_option_flight(route)
     # flight_route[0].save()
-    route, route_options = routes_engine.create_route(athens, agios_ionnis)
+    # route, route_options = routes_engine.create_route(athens, agios_ionnis)
+    route, route_options = routes_engine.create_route(tel_aviv, new_york)
 
-    opt = route_options[0]
-    with transaction.atomic():
-        route.save()
-        # if isinstance(opt, tr_db.FlightRoute):
-        #     opt.transportation.save()
-        #     opt.airport_location_0.airport_transportation.save()
-        #     opt.airport_location_0.save()
-        #     opt.airport_location_1.airport_transportation.save()
-        #     opt.airport_location_1.save()
-        #     opt.save()
-        if isinstance(opt, tr_db.DriveRoute):
-            opt.transportation.save()
-            opt.save()
-            route_option = tr_db.RouteOption(content_object=opt, route=route)
-            route_option.save()
+    # TODO: add check if airport_location_0==airport_location_1 (no need since constraint will always be applied)
+    try:
+        with transaction.atomic():
+            route.save()
+            for opt in route_options:
+                if isinstance(opt, tr_db.FlightRoute):
+                    opt.transportation.save()
+                    al_0 = opt.airport_location_0
+                    al_1 = opt.airport_location_1
+                    al_0.transportation.save()
+                    al_1.transportation.save()
+                    al_query = create_airport_location_query([al_0, al_1])
+                    existing_airport_locations = \
+                        {(al.airport_id, al.location_id): al for al in tr_db.AirportLocation.objects.filter(al_query)}
+                    current = tr_db.AirportLocation.objects.all().values_list('id', 'airport_id', 'location_id')
+                    print(f'current airport locations in db: {list(current)}')
+                    print(f'existing airport locations: {existing_airport_locations}')
+
+                    if (al_0.airport_id, al_0.location_id) not in existing_airport_locations:
+                        print(f'writing: ${(al_0.airport_id, al_0.location_id)}')
+                        al_0.save()
+                        print('1')
+                    else:
+                        print(f'skipping: ${(al_0.airport_id, al_0.location_id)}')
+                        opt.airport_location_0 = existing_airport_locations[(al_0.airport_id, al_0.location_id)]
+                        print('11')
+
+                    if (al_1.airport_id, al_1.location_id) not in existing_airport_locations:
+                        print(f'writing: ${(al_1.airport_id, al_1.location_id)}')
+                        al_1.save()
+                        print('2')
+                    else:
+                        print(f'skipping: ${(al_1.airport_id, al_1.location_id)}')
+                        opt.airport_location_1 = existing_airport_locations[(al_1.airport_id, al_1.location_id)]
+                        print('22')
+
+                    opt.save()
+                    print('3')
+                    route_option = tr_db.RouteOption(content_object=opt, route=route)
+                    route_option.save()
+                    print('4')
+                    print('')
+
+                # if isinstance(opt, tr_db.DriveRoute):
+                #     opt.transportation.save()
+                #     opt.save()
+                #     route_option = tr_db.RouteOption(content_object=opt, route=route)
+                #     route_option.save()
+    except Exception as e:
+        print(e)
 
     print('done')
 

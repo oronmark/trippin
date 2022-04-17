@@ -179,6 +179,9 @@ class AirportsDAO:
 
         potential_connections = list(product(closest_airports_0, closest_airports_1))
 
+        if not potential_connections:
+            return []
+
         airport_connections = tr_db.AirportsConnection.objects.filter(
             self._create_airports_connection_query(potential_connections))
         connections_data = []

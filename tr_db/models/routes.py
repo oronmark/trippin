@@ -44,11 +44,10 @@ class Transportation(BaseModel):
 # TODO: add several options of airport arrival (transit, driving)
 # TODO: rename
 class AirportLocation(BaseModel):
-    airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
-                                related_name='airport')
+    airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
-    airport_transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
-                                                  related_name='airport_transportation')
+    transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
+                                          related_name='transportation')
 
     class Meta:
         unique_together = [('airport', 'location')]

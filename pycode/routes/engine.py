@@ -69,7 +69,7 @@ class RoutesEngine:
     def create_airport_location(self, airport: Airport, location: Location) -> List[AirportLocation]:
         transportations = self._create_gmaps_transportations(airport, location, Transportation.Type.DRIVING)
 
-        return [AirportLocation(airport=airport, location=location, airport_transportation=t)
+        return [AirportLocation(airport=airport, location=location, transportation=t)
                 for t in transportations]
 
     def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
@@ -93,13 +93,11 @@ class RoutesEngine:
 
             flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
                                              airport_location_1=airport_location_options_1[0],
-                                             transportation=transportation,
-                                             route=route))
+                                             transportation=transportation))
         return flight_routes
 
     def create_route_options(self, route: Route) -> List[BaseRoute]:
-        #flight_routes = self.create_route_option_flight(route)
-        flight_routes = []
+        flight_routes = self.create_route_option_flight(route)
         drive_routes = self.create_route_option_driving(route)
         return flight_routes + drive_routes
 
