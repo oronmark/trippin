@@ -1,14 +1,16 @@
-from .base_models import TRBaseModel
+from .base_models import BaseModel
 from django.db import models
 from .locations import Location
 from .airports import Airport
 from trippin.pycode.tr_utils import sort_attributes
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 
 # TODO: what should a rout stand for ? the time it takes to get from  point a to point b? for poc yes
 # TODO: add mixed transportation type (i.e driving and transit)
 # TODO: fix nullable fields
-class Route(TRBaseModel):
+class Route(BaseModel):
     location_0 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_0')
     location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
 
@@ -24,7 +26,7 @@ class Route(TRBaseModel):
         return f'location_0={self.location_0.name}, location_1={self.location_1.name}'
 
 
-class Transportation(TRBaseModel):
+class Transportation(BaseModel):
     class Type(models.TextChoices):
         DRIVING = 'driving',
         TRANSIT = 'transit',
@@ -41,7 +43,7 @@ class Transportation(TRBaseModel):
 
 # TODO: add several options of airport arrival (transit, driving)
 # TODO: rename
-class AirportLocation(TRBaseModel):
+class AirportLocation(BaseModel):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False,
                                 related_name='airport')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
@@ -55,10 +57,17 @@ class AirportLocation(TRBaseModel):
         return f'airport={self.airport.iata_code}, location={self.location.name}'
 
 
-class RouteOption(TRBaseModel):
-    # route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
+class RouteOption(models.Model):
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
+
+    content_object = GenericForeignKey()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+
+
+class BaseRoute(models.Model):
     transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=True,
-                                          related_name='transportation')
+                                          related_name='transportation', default=None)
 
     class Meta:
         abstract = True
@@ -66,13 +75,11 @@ class RouteOption(TRBaseModel):
 
 # TODO: consider adding details regarding multi leg flights
 # TODO: make nullable false
-class FlightRoute(RouteOption):
+class FlightRoute(BaseRoute):
     airport_location_0 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
                                               null=True, related_name='airport_location_0')
     airport_location_1 = models.OneToOneField(AirportLocation, on_delete=models.CASCADE,
                                               null=True, related_name='airport_location_1')
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_flight')
-
 
     class Meta:
         unique_together = [('airport_location_0', 'airport_location_1')]
@@ -83,11 +90,10 @@ class FlightRoute(RouteOption):
         super(FlightRoute, self).save(*args, **kwargs)
 
 
-class DriveRoute(RouteOption):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_drive')
+class DriveRoute(BaseRoute):
+    pass
 
 
-class TransitRoute(RouteOption):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options_transit')
-
+class TransitRoute(BaseRoute):
+    pass
 

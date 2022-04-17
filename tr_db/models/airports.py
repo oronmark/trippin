@@ -1,9 +1,9 @@
-from .base_models import TRBaseModel, Coordinates
+from .base_models import BaseModel, Coordinates
 from django.db import models
 from trippin.pycode.tr_utils import sort_attributes
 
 
-class Airport(TRBaseModel, Coordinates):
+class Airport(BaseModel, Coordinates):
     type = models.CharField(max_length=255, null=True)
     name = models.CharField(max_length=255, null=True)
     continent = models.CharField(max_length=2, null=True)
@@ -20,7 +20,7 @@ class Airport(TRBaseModel, Coordinates):
 
 
 # TODO consider unifying with route model
-class AirportsConnection(TRBaseModel):
+class AirportsConnection(BaseModel):
     airport_0 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_0')
     airport_1 = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport_1')
     distance = models.IntegerField()  # in meters

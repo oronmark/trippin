@@ -4,12 +4,10 @@ from typing import List
 
 import django
 from amadeus import Client
-
 from pycode.airports.airports import AirportsDAO
 
 django.setup()
 from trippin import tr_db
-import datetime
 from routes.engine import RoutesEngine
 import os
 import googlemaps
@@ -95,6 +93,7 @@ def delete_db():
     tr_db.FlightRoute.objects.all().delete()
     tr_db.DriveRoute.objects.all().delete()
     tr_db.Route.objects.all().delete()
+    tr_db.RouteOption.objects.all().delete()
 
 
 def main():
@@ -126,16 +125,18 @@ def main():
     opt = route_options[0]
     with transaction.atomic():
         route.save()
-        if isinstance(opt, tr_db.FlightRoute):
-            opt.transportation.save()
-            opt.airport_location_0.airport_transportation.save()
-            opt.airport_location_0.save()
-            opt.airport_location_1.airport_transportation.save()
-            opt.airport_location_1.save()
-            opt.save()
+        # if isinstance(opt, tr_db.FlightRoute):
+        #     opt.transportation.save()
+        #     opt.airport_location_0.airport_transportation.save()
+        #     opt.airport_location_0.save()
+        #     opt.airport_location_1.airport_transportation.save()
+        #     opt.airport_location_1.save()
+        #     opt.save()
         if isinstance(opt, tr_db.DriveRoute):
             opt.transportation.save()
             opt.save()
+            route_option = tr_db.RouteOption(content_object=opt, route=route)
+            route_option.save()
 
     print('done')
 

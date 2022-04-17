@@ -8,7 +8,7 @@ django.setup()
 
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute, RouteOption
+    DriveRoute, RouteOption, BaseRoute
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
 
@@ -58,7 +58,9 @@ class RoutesEngine:
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
         transportations = self._create_gmaps_transportations(route.location_0, route.location_1,
                                                              Transportation.Type.DRIVING)
-        return [DriveRoute(route=route, transportation=t) for t in transportations]
+
+       # return [DriveRoute(route=route, transportation=t) for t in transportations]
+        return [DriveRoute(transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
         pass
@@ -95,12 +97,13 @@ class RoutesEngine:
                                              route=route))
         return flight_routes
 
-    def create_route_options(self, route: Route) -> List[RouteOption]:
-        flight_routes = self.create_route_option_flight(route)
+    def create_route_options(self, route: Route) -> List[BaseRoute]:
+        #flight_routes = self.create_route_option_flight(route)
+        flight_routes = []
         drive_routes = self.create_route_option_driving(route)
         return flight_routes + drive_routes
 
-    def create_route(self, location_0: Location, location_1: Location) -> (Route, List[RouteOption]):
+    def create_route(self, location_0: Location, location_1: Location) -> (Route, List[BaseRoute]):
         new_route = tr_db.Route(location_0=location_0, location_1=location_1)
         route_options = self.create_route_options(new_route)
         return new_route, route_options
