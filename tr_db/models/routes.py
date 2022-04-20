@@ -3,7 +3,7 @@ from django.db import models
 from .locations import Location
 from .airports import Airport
 from trippin.pycode.tr_utils import sort_attributes
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 

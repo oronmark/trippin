@@ -22,10 +22,12 @@ from functools import reduce
 
 # next session:
 # write routes to db - on it
-# add flight time to flight route
+# check how to do proper reverse lookup for generic relation
+# try delete model
+# add flight time to flight route - done
 # add update time for locations - done
 # run airport connection for all (or most) airports
-# fix no rows when using reverse lookup
+# fix no rows when using reverse lookup - done
 
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
@@ -96,7 +98,7 @@ def populate_airports_db():
 
 def delete_db():
     tr_db.Transportation.objects.all().delete()
-    tr_db.AirportsConnection.objects.all().delete()
+    tr_db.AirportLocation.objects.all().delete()
     tr_db.FlightRoute.objects.all().delete()
     tr_db.DriveRoute.objects.all().delete()
     tr_db.Route.objects.all().delete()
