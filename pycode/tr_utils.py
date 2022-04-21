@@ -9,7 +9,7 @@ from trippin import tr_db
 
 DEFAULT_ENCODING = 'UTF-8'
 DEFAULT_BATCH_SIZE = 500
-
+TR_ID = int
 
 @dataclass
 class Coordinates:

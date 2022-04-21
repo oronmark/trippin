@@ -1,3 +1,5 @@
+from typing import List
+
 from .base_models import BaseModel
 from django.db import models
 from .locations import Location
@@ -79,6 +81,7 @@ class FlightRoute(BaseRoute):
                                            null=True, related_name='airport_location_0')
     airport_location_1 = models.ForeignKey(AirportLocation, on_delete=models.CASCADE,
                                            null=True, related_name='airport_location_1')
+    flight_routes_oron = GenericRelation(RouteOption, related_query_name='flights_oron', on_delete=models.CASCADE, related_name='bla')
 
     class Meta:
         unique_together = [('airport_location_0', 'airport_location_1')]
@@ -87,6 +90,9 @@ class FlightRoute(BaseRoute):
         sort_attributes(self, lambda al: (al.airport.iata_code, al.location.place_id),
                         ['airport_location_0', 'airport_location_1'])
         super(FlightRoute, self).save(*args, **kwargs)
+
+    def get_airport_locations(self) -> List[AirportLocation]:
+        return [self.airport_location_0, self.airport_location_1]
 
 
 class DriveRoute(BaseRoute):

@@ -3,14 +3,15 @@ import googlemaps
 import django
 import logging
 
-logging.basicConfig(level=logging.INFO)
+
 django.setup()
 
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute, RouteOption, BaseRoute
+    DriveRoute, BaseRoute, RouteOption
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
+from .writer import save_route
 
 
 # TODO: add error handling, logging and costume exceptions
@@ -58,8 +59,6 @@ class RoutesEngine:
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
         transportations = self._create_gmaps_transportations(route.location_0, route.location_1,
                                                              Transportation.Type.DRIVING)
-
-       # return [DriveRoute(route=route, transportation=t) for t in transportations]
         return [DriveRoute(transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
@@ -105,6 +104,12 @@ class RoutesEngine:
         new_route = tr_db.Route(location_0=location_0, location_1=location_1)
         route_options = self.create_route_options(new_route)
         return new_route, route_options
+
+    @staticmethod
+    def save_route(route: Route, route_options: RouteOption):
+        logging.info(f'saving route to db: {route}')
+        save_route(route, route_options)
+
 
     # # TODO: fix
     # def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):

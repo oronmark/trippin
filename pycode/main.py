@@ -137,56 +137,58 @@ def main():
     # route, route_options = routes_engine.create_route(athens, agios_ionnis)
     route, route_options = routes_engine.create_route(tel_aviv, new_york)
 
-    # TODO: add check if airport_location_0==airport_location_1 (no need since constraint will always be applied)
-    try:
-        with transaction.atomic():
-            route.save()
-            for opt in route_options:
-                if isinstance(opt, tr_db.FlightRoute):
-                    opt.transportation.save()
-                    al_0 = opt.airport_location_0
-                    al_1 = opt.airport_location_1
-                    al_0.transportation.save()
-                    al_1.transportation.save()
-                    al_query = create_airport_location_query([al_0, al_1])
-                    existing_airport_locations = \
-                        {(al.airport_id, al.location_id): al for al in tr_db.AirportLocation.objects.filter(al_query)}
-                    current = tr_db.AirportLocation.objects.all().values_list('id', 'airport_id', 'location_id')
-                    print(f'current airport locations in db: {list(current)}')
-                    print(f'existing airport locations: {existing_airport_locations}')
+    routes_engine.save_route(route, route_options)
 
-                    if (al_0.airport_id, al_0.location_id) not in existing_airport_locations:
-                        print(f'writing: ${(al_0.airport_id, al_0.location_id)}')
-                        al_0.save()
-                        print('1')
-                    else:
-                        print(f'skipping: ${(al_0.airport_id, al_0.location_id)}')
-                        opt.airport_location_0 = existing_airport_locations[(al_0.airport_id, al_0.location_id)]
-                        print('11')
-
-                    if (al_1.airport_id, al_1.location_id) not in existing_airport_locations:
-                        print(f'writing: ${(al_1.airport_id, al_1.location_id)}')
-                        al_1.save()
-                        print('2')
-                    else:
-                        print(f'skipping: ${(al_1.airport_id, al_1.location_id)}')
-                        opt.airport_location_1 = existing_airport_locations[(al_1.airport_id, al_1.location_id)]
-                        print('22')
-
-                    opt.save()
-                    print('3')
-                    route_option = tr_db.RouteOption(content_object=opt, route=route)
-                    route_option.save()
-                    print('4')
-                    print('')
-
-                # if isinstance(opt, tr_db.DriveRoute):
-                #     opt.transportation.save()
-                #     opt.save()
-                #     route_option = tr_db.RouteOption(content_object=opt, route=route)
-                #     route_option.save()
-    except Exception as e:
-        print(e)
+    # # TODO: add check if airport_location_0==airport_location_1 (no need since constraint will always be applied)
+    # try:
+    #     with transaction.atomic():
+    #         route.save()
+    #         for opt in route_options:
+    #             if isinstance(opt, tr_db.FlightRoute):
+    #                 opt.transportation.save()
+    #                 al_0 = opt.airport_location_0
+    #                 al_1 = opt.airport_location_1
+    #                 al_0.transportation.save()
+    #                 al_1.transportation.save()
+    #                 al_query = create_airport_location_query([al_0, al_1])
+    #                 existing_airport_locations = \
+    #                     {(al.airport_id, al.location_id): al for al in tr_db.AirportLocation.objects.filter(al_query)}
+    #                 current = tr_db.AirportLocation.objects.all().values_list('id', 'airport_id', 'location_id')
+    #                 print(f'current airport locations in db: {list(current)}')
+    #                 print(f'existing airport locations: {existing_airport_locations}')
+    #
+    #                 if (al_0.airport_id, al_0.location_id) not in existing_airport_locations:
+    #                     print(f'writing: ${(al_0.airport_id, al_0.location_id)}')
+    #                     al_0.save()
+    #                     print('1')
+    #                 else:
+    #                     print(f'skipping: ${(al_0.airport_id, al_0.location_id)}')
+    #                     opt.airport_location_0 = existing_airport_locations[(al_0.airport_id, al_0.location_id)]
+    #                     print('11')
+    #
+    #                 if (al_1.airport_id, al_1.location_id) not in existing_airport_locations:
+    #                     print(f'writing: ${(al_1.airport_id, al_1.location_id)}')
+    #                     al_1.save()
+    #                     print('2')
+    #                 else:
+    #                     print(f'skipping: ${(al_1.airport_id, al_1.location_id)}')
+    #                     opt.airport_location_1 = existing_airport_locations[(al_1.airport_id, al_1.location_id)]
+    #                     print('22')
+    #
+    #                 opt.save()
+    #                 print('3')
+    #                 route_option = tr_db.RouteOption(content_object=opt, route=route)
+    #                 route_option.save()
+    #                 print('4')
+    #                 print('')
+    #
+    #             # if isinstance(opt, tr_db.DriveRoute):
+    #             #     opt.transportation.save()
+    #             #     opt.save()
+    #             #     route_option = tr_db.RouteOption(content_object=opt, route=route)
+    #             #     route_option.save()
+    # except Exception as e:
+    #     print(e)
 
     print('done')
 
