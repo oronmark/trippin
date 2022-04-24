@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List
 from functools import reduce
-
+import logging
 from django.db.models import Q
 
 from trippin.tr_db import Route, FlightRoute, AirportLocation, DriveRoute, RouteOption
@@ -61,3 +61,4 @@ def save_route(route: Route, route_options: List[RouteOption]):
 
         route_option = RouteOption(content_object=opt, route=route)
         route_option.save()
+    logging.info(f'finished saving route {route}')

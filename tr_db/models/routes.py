@@ -81,7 +81,7 @@ class FlightRoute(BaseRoute):
                                            null=True, related_name='airport_location_0')
     airport_location_1 = models.ForeignKey(AirportLocation, on_delete=models.CASCADE,
                                            null=True, related_name='airport_location_1')
-    flight_routes_oron = GenericRelation(RouteOption, related_query_name='flights_oron', on_delete=models.CASCADE, related_name='bla')
+    route_option = GenericRelation(RouteOption, related_query_name='flight_options')
 
     class Meta:
         unique_together = [('airport_location_0', 'airport_location_1')]
@@ -96,7 +96,7 @@ class FlightRoute(BaseRoute):
 
 
 class DriveRoute(BaseRoute):
-    pass
+    route_option = GenericRelation(RouteOption, related_query_name='drive_options')
 
 
 class TransitRoute(BaseRoute):

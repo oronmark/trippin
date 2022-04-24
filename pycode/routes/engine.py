@@ -107,7 +107,6 @@ class RoutesEngine:
 
     @staticmethod
     def save_route(route: Route, route_options: RouteOption):
-        logging.info(f'saving route to db: {route}')
         save_route(route, route_options)
 
 

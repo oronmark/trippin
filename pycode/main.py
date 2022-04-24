@@ -8,6 +8,7 @@ from pycode.airports.airports import AirportsDAO
 
 django.setup()
 from trippin import tr_db
+from trippin.pycode import tr_utils
 from routes.engine import RoutesEngine
 import os
 import googlemaps
@@ -21,13 +22,10 @@ from functools import reduce
 ###########################################################################################
 
 # next session:
-# write routes to db - on it
 # check how to do proper reverse lookup for generic relation
 # try delete model
-# add flight time to flight route - done
-# add update time for locations - done
 # run airport connection for all (or most) airports
-# fix no rows when using reverse lookup - done
+# generalize symmetric filters for location, flight route etc
 
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
@@ -40,6 +38,7 @@ from functools import reduce
 # check avg travel time with transit and driving
 # change lng and lat for location to something more general (perhaps 3 coordinates with which represent borders)
 # include fairies in driving and transit calculations (i.e athens to lesbos)
+# make custome logger
 
 # misc:
 # if there are no waypoints in the directions request there will be only 1 leg in the route
@@ -64,7 +63,9 @@ def create_locations():
                                   name='Zaguri')
     new_york = tr_db.Location(place_id='ChIJOwg_06VPwokRYv534QaPC8g', lng=-74.0059728, lat=40.7127753, country='US',
                               name='New York')
-
+    eilat = tr_db.Location(place_id='ChIJC155JONxABUR2_Z3VfiVHf4', lng=35.0087689, lat=29.7630079,
+                              country='IL',
+                              name='Eilat')
     thessaloniki.save()
     tel_aviv.save()
     athens.save()
@@ -72,6 +73,16 @@ def create_locations():
     litochoro.save()
     zagorochoria.save()
     new_york.save()
+    eilat.save()
+
+
+def create_manual_airport_connection(code_0: str, code_1: str):
+    ap_0 = tr_db.Airport.objects.filter(iata_code=code_0).get()
+    ap_1 = tr_db.Airport.objects.filter(iata_code=code_1).get()
+    distance, travel_time = tr_utils.calculate_flight_stats(ap_0, ap_1)
+    connection = tr_db.AirportsConnection(airport_0=ap_0, airport_1=ap_1, distance=distance, duration=travel_time,
+                                          legs=1)
+    connection.save()
 
 
 def create_airport_connections(codes: List[str]):
@@ -116,6 +127,7 @@ def main():
     # create_locations()
     # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
     # delete_db()
+    # create_manual_airport_connection('TLV', 'ETM')
 
     gmaps = googlemaps.Client(key=os.environ['API_KEY'])
     amadeus = Client(
@@ -130,68 +142,20 @@ def main():
     new_york = tr_db.Location.objects.filter(name='New York').get()
     athens = tr_db.Location.objects.filter(name='Athens').get()
     agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
-    # route = tr_db.Route(location_0=athens, location_1=agios_ionnis)
-    # driving_route = routes_engine.create_route_option_driving(route)
-    # flight_route = routes_engine.create_route_option_flight(route)
-    # flight_route[0].save()
+    eilat = tr_db.Location.objects.filter(name='Eilat').get()
+
     # route, route_options = routes_engine.create_route(athens, agios_ionnis)
-    route, route_options = routes_engine.create_route(tel_aviv, new_york)
+    # route, route_options = routes_engine.create_route(tel_aviv, new_york)
+    # routes_engine.save_route(route, route_options)
 
+    # TODO: check why ramon airpot is not part of the answers
+    route, route_options = routes_engine.create_route(tel_aviv, eilat)
     routes_engine.save_route(route, route_options)
-
-    # # TODO: add check if airport_location_0==airport_location_1 (no need since constraint will always be applied)
-    # try:
-    #     with transaction.atomic():
-    #         route.save()
-    #         for opt in route_options:
-    #             if isinstance(opt, tr_db.FlightRoute):
-    #                 opt.transportation.save()
-    #                 al_0 = opt.airport_location_0
-    #                 al_1 = opt.airport_location_1
-    #                 al_0.transportation.save()
-    #                 al_1.transportation.save()
-    #                 al_query = create_airport_location_query([al_0, al_1])
-    #                 existing_airport_locations = \
-    #                     {(al.airport_id, al.location_id): al for al in tr_db.AirportLocation.objects.filter(al_query)}
-    #                 current = tr_db.AirportLocation.objects.all().values_list('id', 'airport_id', 'location_id')
-    #                 print(f'current airport locations in db: {list(current)}')
-    #                 print(f'existing airport locations: {existing_airport_locations}')
-    #
-    #                 if (al_0.airport_id, al_0.location_id) not in existing_airport_locations:
-    #                     print(f'writing: ${(al_0.airport_id, al_0.location_id)}')
-    #                     al_0.save()
-    #                     print('1')
-    #                 else:
-    #                     print(f'skipping: ${(al_0.airport_id, al_0.location_id)}')
-    #                     opt.airport_location_0 = existing_airport_locations[(al_0.airport_id, al_0.location_id)]
-    #                     print('11')
-    #
-    #                 if (al_1.airport_id, al_1.location_id) not in existing_airport_locations:
-    #                     print(f'writing: ${(al_1.airport_id, al_1.location_id)}')
-    #                     al_1.save()
-    #                     print('2')
-    #                 else:
-    #                     print(f'skipping: ${(al_1.airport_id, al_1.location_id)}')
-    #                     opt.airport_location_1 = existing_airport_locations[(al_1.airport_id, al_1.location_id)]
-    #                     print('22')
-    #
-    #                 opt.save()
-    #                 print('3')
-    #                 route_option = tr_db.RouteOption(content_object=opt, route=route)
-    #                 route_option.save()
-    #                 print('4')
-    #                 print('')
-    #
-    #             # if isinstance(opt, tr_db.DriveRoute):
-    #             #     opt.transportation.save()
-    #             #     opt.save()
-    #             #     route_option = tr_db.RouteOption(content_object=opt, route=route)
-    #             #     route_option.save()
-    # except Exception as e:
-    #     print(e)
 
     print('done')
 
 
 if __name__ == '__main__':
     main()
+
+
