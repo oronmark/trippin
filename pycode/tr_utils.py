@@ -9,7 +9,7 @@ from trippin import tr_db
 
 DEFAULT_ENCODING = 'UTF-8'
 DEFAULT_BATCH_SIZE = 500
-
+TR_ID = int
 
 @dataclass
 class Coordinates:
@@ -125,7 +125,7 @@ def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
 
 
-def calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
+def  calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
     dist = calculate_distance_on_map(p0, p1)
     time = calculate_flight_time_by_distance(dist)
     return dist, time

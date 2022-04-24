@@ -3,14 +3,15 @@ import googlemaps
 import django
 import logging
 
-logging.basicConfig(level=logging.INFO)
+
 django.setup()
 
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute, RouteOption
+    DriveRoute, BaseRoute, RouteOption
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
+from .writer import save_route
 
 
 # TODO: add error handling, logging and costume exceptions
@@ -58,7 +59,7 @@ class RoutesEngine:
     def create_route_option_driving(self, route: Route) -> List[DriveRoute]:
         transportations = self._create_gmaps_transportations(route.location_0, route.location_1,
                                                              Transportation.Type.DRIVING)
-        return [DriveRoute(route=route, transportation=t) for t in transportations]
+        return [DriveRoute(transportation=t) for t in transportations]
 
     def create_route_option_transit(self, route: Route) -> List[Transportation]:
         pass
@@ -67,7 +68,7 @@ class RoutesEngine:
     def create_airport_location(self, airport: Airport, location: Location) -> List[AirportLocation]:
         transportations = self._create_gmaps_transportations(airport, location, Transportation.Type.DRIVING)
 
-        return [AirportLocation(airport=airport, location=location, airport_transportation=t)
+        return [AirportLocation(airport=airport, location=location, transportation=t)
                 for t in transportations]
 
     def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
@@ -94,11 +95,20 @@ class RoutesEngine:
                                              transportation=transportation))
         return flight_routes
 
-    # def create_route_options(self, route: Route) -> List[RouteOption]:
-    #     flight_routes = self.create_route_option_flight(route)
-    #     drive_routes = self.create_route_option_driving(route)
-    #     x : List[RouteOption] = flight_routes + drive_routes
-    #     return flight_routes + drive_routes
+    def create_route_options(self, route: Route) -> List[BaseRoute]:
+        flight_routes = self.create_route_option_flight(route)
+        drive_routes = self.create_route_option_driving(route)
+        return flight_routes + drive_routes
+
+    def create_route(self, location_0: Location, location_1: Location) -> (Route, List[BaseRoute]):
+        new_route = tr_db.Route(location_0=location_0, location_1=location_1)
+        route_options = self.create_route_options(new_route)
+        return new_route, route_options
+
+    @staticmethod
+    def save_route(route: Route, route_options: RouteOption):
+        save_route(route, route_options)
+
 
     # # TODO: fix
     # def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):
@@ -113,10 +123,3 @@ class RoutesEngine:
     #
     #     return routes, route_types
 
-
-def main():
-    print('done')
-
-
-if __name__ == '__main__':
-    main()
