@@ -9,7 +9,7 @@ cd /mnt/c/
 sudo docker-compose -f stack.yml up -d
 
 install req:
-pip install -r requirements.txt
+pip install -r  C:\Users\Vicki\projects\trippin\trippin\requirements.txt
 
 activate venv windows
 C:\Users\Vicki\projects\trippin\venv\Scripts\activate.bat

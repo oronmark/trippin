@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Optional, Dict, Callable, Tuple
+from typing import Any, List, Optional, Dict, Callable
 import csv
 from math import sin, cos, sqrt, atan2, radians
-
-from trippin import tr_db
-# from pycode.airports.airport_data import AirportData
+import json
+from trippin.pycode.tr_path import tr_path
 
 DEFAULT_ENCODING = 'UTF-8'
 DEFAULT_BATCH_SIZE = 500
 TR_ID = int
+
 
 @dataclass
 class Coordinates:
@@ -125,7 +125,7 @@ def calculate_flight_time_by_distance(distance: float) -> float:
     return distance / FLIGHT_AVG_SPEED
 
 
-def  calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
+def calculate_flight_stats(p0: Coordinates, p1: Coordinates) -> (float, float):
     dist = calculate_distance_on_map(p0, p1)
     time = calculate_flight_time_by_distance(dist)
     return dist, time
@@ -137,3 +137,14 @@ def sort_attributes(obj, f, attributes):
     for att, val in zip(attributes, values):
         setattr(obj, att, val)
 
+
+def write_to_json_from_dicts(data: List[Dict[Any, Any]], path: Path):
+    with open(path, 'w') as fp:
+        json.dump(data, fp)
+
+
+def save_gmaps_result(data: List[Dict[Any, Any]], from_name: str, to_name: str, path: Path = None):
+    results_sub_folder = 'gmaps_directions_results'
+    if not path:
+        path = Path.joinpath(tr_path.get_resources_path(), results_sub_folder, f'{from_name}_to_{to_name}.json')
+    write_to_json_from_dicts(data, path)

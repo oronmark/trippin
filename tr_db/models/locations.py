@@ -11,7 +11,7 @@ class Location(BaseModel, Coordinates):
     routes_update_time = models.DateTimeField(default=None, null=True)
 
     def __str__(self):
-        return self.place_id
+        return self.name
 
 
 # TODO: add activity, theme (specific activity like harry potter)

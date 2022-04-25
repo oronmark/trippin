@@ -1,16 +1,16 @@
+import dataclasses
 from typing import List
 import googlemaps
 import django
 import logging
-
-
+from progressbar import progressbar
 django.setup()
 
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
     DriveRoute, BaseRoute, RouteOption
 from pycode.airports.airports import AirportsDAO
-from pycode.tr_utils import Coordinates
+from pycode.tr_utils import Coordinates, save_gmaps_result
 from .writer import save_route
 
 
@@ -26,7 +26,14 @@ from .writer import save_route
 # TODO: remove airports dao from init, should be a singleton accessible to engine
 # TODO: expand transportations to more types and mark type
 # TODO: allow possible tra transportation and not only one to one
+
+
 class RoutesEngine:
+
+    @dataclasses.dataclass
+    class _RouteWithOptions:
+        route: tr_db.Route
+        route_options: List[tr_db.BaseRoute]
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
         self._gmaps_client = gmaps_client
@@ -35,8 +42,10 @@ class RoutesEngine:
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
 
+    # TODO: remove option to write result to file
     def _create_gmaps_transportations(self, p0: Coordinates, p1: Coordinates,
-                                      transportation_type: Transportation.Type) -> \
+                                      transportation_type: Transportation.Type,
+                                      save_to_file: bool = True) -> \
             List[Transportation]:
 
         transportations = []
@@ -44,6 +53,9 @@ class RoutesEngine:
             directions_result = self._gmaps_client.directions((p0.lat, p0.lng),
                                                               (p1.lat, p1.lng),
                                                               mode=transportation_type)
+
+            if save_to_file:
+                save_gmaps_result(directions_result, from_name=p0.__str__(), to_name=p1.__str__())
 
             for d in directions_result:
                 result = d['legs'][0]
@@ -101,25 +113,29 @@ class RoutesEngine:
         return flight_routes + drive_routes
 
     def create_route(self, location_0: Location, location_1: Location) -> (Route, List[BaseRoute]):
+        logging.info(f'creating route for locations locations_0: {location_0}, locations_1: {location_1}')
         new_route = tr_db.Route(location_0=location_0, location_1=location_1)
         route_options = self.create_route_options(new_route)
         return new_route, route_options
 
     @staticmethod
-    def save_route(route: Route, route_options: RouteOption):
+    def save_route(route: Route, route_options: List[RouteOption]):
         save_route(route, route_options)
 
+    def create_new_routes(self) -> List[_RouteWithOptions]:
+        # cannot run in multithreaded mode for now, should be broken into small tasks per route
+        new_locations = tr_db.Location.objects.filter(routes_update_time__isnull=True)
+        new_routes = []
+        for new_location in progressbar(new_locations):
+            logging.info(f'creating routes for new location {new_location}')
+            for location in progressbar(tr_db.Location.objects.all()):
+                if new_location == location:
+                    continue
+                route, route_options = self.create_route(new_location, location)
+                new_routes.append(self._RouteWithOptions(route=route, route_options=route_options))
+        return new_routes
 
-    # # TODO: fix
-    # def create_routes(self, new_location: Location) -> (List[Route], List[Transportation]):
-    #
-    #     routes = []
-    #     route_types = []
-    #     for location in Location.objects.all():
-    #         new_route = tr_db.Route(location_0=new_location, location_1=location)
-    #         routes.append(new_route)
-    #         route_types.append(self.create_route_option_driving(new_route))
-    #         # route_types.append(self.create_route_option_transit(new_route))
-    #
-    #     return routes, route_types
-
+    def run_engine(self):
+        logging.info('Routes engine is running...')
+        routes = self.create_new_routes()
+        print('done')

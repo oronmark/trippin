@@ -12,7 +12,6 @@ from trippin.pycode import tr_utils
 from routes.engine import RoutesEngine
 import os
 import googlemaps
-from django.db import transaction
 from django.db.models import Q
 from functools import reduce
 
@@ -22,10 +21,8 @@ from functools import reduce
 ###########################################################################################
 
 # next session:
-# check how to do proper reverse lookup for generic relation
-# try delete model
-# run airport connection for all (or most) airports
-# generalize symmetric filters for location, flight route etc
+# save gmaps results and use without making an http call (for dev only)
+# add maximal distance to craete drive route for
 
 # open questions:
 # how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
@@ -39,6 +36,10 @@ from functools import reduce
 # change lng and lat for location to something more general (perhaps 3 coordinates with which represent borders)
 # include fairies in driving and transit calculations (i.e athens to lesbos)
 # make custome logger
+# check how to do proper reverse lookup for generic relation
+# try delete model
+# run airport connection for all (or most) airports
+# generalize symmetric filters for location, flight route etc
 
 # misc:
 # if there are no waypoints in the directions request there will be only 1 leg in the route
@@ -138,20 +139,21 @@ def main():
     airports_dao = AirportsDAO(amadeus_client=amadeus)
     routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
 
-    tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
-    new_york = tr_db.Location.objects.filter(name='New York').get()
-    athens = tr_db.Location.objects.filter(name='Athens').get()
-    agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
-    eilat = tr_db.Location.objects.filter(name='Eilat').get()
-
-    # route, route_options = routes_engine.create_route(athens, agios_ionnis)
-    # route, route_options = routes_engine.create_route(tel_aviv, new_york)
+    # tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
+    # new_york = tr_db.Location.objects.filter(name='New York').get()
+    # athens = tr_db.Location.objects.filter(name='Athens').get()
+    # agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
+    # eilat = tr_db.Location.objects.filter(name='Eilat').get()
+    #
+    # # route, route_options = routes_engine.create_route(athens, agios_ionnis)
+    # # route, route_options = routes_engine.create_route(tel_aviv, new_york)
+    # # routes_engine.save_route(route, route_options)
+    #
+    # # TODO: check why ramon airpot is not part of the answers
+    # route, route_options = routes_engine.create_route(tel_aviv, eilat)
     # routes_engine.save_route(route, route_options)
 
-    # TODO: check why ramon airpot is not part of the answers
-    route, route_options = routes_engine.create_route(tel_aviv, eilat)
-    routes_engine.save_route(route, route_options)
-
+    routes_engine.create_new_routes()
     print('done')
 
 

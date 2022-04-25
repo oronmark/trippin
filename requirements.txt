@@ -5,4 +5,5 @@ djangorestframework
 googlemaps
 amadeus
 geopy
-progress
+tqdm
+progressbar2
