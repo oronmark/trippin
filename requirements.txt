@@ -7,3 +7,4 @@ amadeus
 geopy
 tqdm
 progressbar2
+multipledispatch

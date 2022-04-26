@@ -1,5 +1,5 @@
 import dataclasses
-from typing import List
+from typing import List, Dict, Any
 import googlemaps
 import django
 import logging
@@ -9,53 +9,77 @@ django.setup()
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
     DriveRoute, BaseRoute, RouteOption
+from trippin.pycode import tr_utils
 from pycode.airports.airports import AirportsDAO
-from pycode.tr_utils import Coordinates, save_gmaps_result
+from pycode.tr_utils import Coordinates
 from .writer import save_route
+from enum import Enum, auto
+from pathlib import Path
+from trippin.pycode.tr_path import tr_path
 
 
 # TODO: add error handling, logging and costume exceptions
-# TODO: unify all transactions to a single function
-# TODO: add tracking bar
 # TODO: consider using distance matrix rather the direction
 # TODO: add transit type
 # TODO: add legs count to route type
 # TODO: airport connections is not efficient, refactor
 # TODO: currently drive only and only first result, need to expand
 # TODO: to start, make another call to google api for arrival from location to airport, instead of using existing routes
-# TODO: remove airports dao from init, should be a singleton accessible to engine
 # TODO: expand transportations to more types and mark type
-# TODO: allow possible tra transportation and not only one to one
-
+# TODO: allow possible transportation and not only one to one
 
 class RoutesEngine:
+
+    # TODO: will be removed during dev
+    class GmapsMode(Enum):
+        LOCAL_READ = auto()
+        LOCAL_WRITE = auto()
+        FULLY_LOCAL = auto()
+        FULLY_REMOTE = auto()
+
+        def is_local_read(self) -> bool:
+            return self == self.LOCAL_READ or self == self.FULLY_LOCAL
+
+        def is_local_write(self) -> bool:
+            return self == self.LOCAL_WRITE or self == self.FULLY_LOCAL
 
     @dataclasses.dataclass
     class _RouteWithOptions:
         route: tr_db.Route
         route_options: List[tr_db.BaseRoute]
 
-    def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO):
+    def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO, gmaps_mode: GmapsMode = GmapsMode.LOCAL_READ):
         self._gmaps_client = gmaps_client
         self._airports_dao = airports_dao
+        self._gmaps_mode = gmaps_mode
 
     def create_routes_amadeus(self) -> List[Transportation]:
         pass
 
-    # TODO: remove option to write result to file
-    def _create_gmaps_transportations(self, p0: Coordinates, p1: Coordinates,
-                                      transportation_type: Transportation.Type,
-                                      save_to_file: bool = True) -> \
+    def _create_gmaps_transportations(self, p0: Coordinates, p1: Coordinates, transportation_type: Transportation.Type) -> \
             List[Transportation]:
+
+        def _create_gmaps_resources_path(from_name: str, to_name: str, path: Path = None) -> Path:
+            from_name, to_name = (from_name, to_name) if from_name < to_name else (to_name, from_name)
+            return path or Path.joinpath(tr_path.get_resources_path(), 'gmaps_directions_results',
+                                         f'{from_name}_to_{to_name}.json')
+
+        def _save_gmaps_result(data: Dict[Any, Any], path: Path = None):
+            path = _create_gmaps_resources_path(p0.__str__(), p1.__str__(), path)
+            tr_utils.write_to_json_from_dicts(data, path)
+
+        def _load_or_query_gmaps_results(path: Path = None) -> Dict[Any, Any]:
+            path = _create_gmaps_resources_path(p0.__str__(), p1.__str__(), path)
+            if path.exists() and self._gmaps_mode.is_local_read():
+                return tr_utils.read_from_json_to_dicts(path)
+            logging.info(f'Querying gmaps directions api for {p0.__str__()} to {p1.__str__()}')
+            return self._gmaps_client.directions((p0.lat, p0.lng), (p1.lat, p1.lng), mode=transportation_type)
 
         transportations = []
         try:
-            directions_result = self._gmaps_client.directions((p0.lat, p0.lng),
-                                                              (p1.lat, p1.lng),
-                                                              mode=transportation_type)
-
-            if save_to_file:
-                save_gmaps_result(directions_result, from_name=p0.__str__(), to_name=p1.__str__())
+            directions_result = _load_or_query_gmaps_results()
+            if self._gmaps_mode.is_local_write():
+                _save_gmaps_result(directions_result)
 
             for d in directions_result:
                 result = d['legs'][0]
@@ -138,4 +162,5 @@ class RoutesEngine:
     def run_engine(self):
         logging.info('Routes engine is running...')
         routes = self.create_new_routes()
+        print('afsafs')
         print('done')

@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, List
 from functools import reduce
 import logging
@@ -9,6 +8,7 @@ from trippin.tr_db import Route, FlightRoute, AirportLocation, DriveRoute, Route
 logging.basicConfig(level=logging.INFO)
 from django.db import transaction
 from trippin.pycode.tr_utils import TR_ID
+from multipledispatch import dispatch
 
 
 # TODO: change input to flight route and not airport location
@@ -31,7 +31,8 @@ def get_or_create_airport_location(airport_location: AirportLocation,
         return airport_location
 
 
-def save_flight_options(option: FlightRoute):
+@dispatch(FlightRoute)
+def save_route_options(option: FlightRoute):
     option.transportation.save()
     al_query = create_airport_location_query(option)
     existing_airport_locations = \
@@ -42,7 +43,8 @@ def save_flight_options(option: FlightRoute):
     option.save()
 
 
-def save_drive_options(option: DriveRoute):
+@dispatch(DriveRoute)
+def save_route_options(option: DriveRoute):
     option.transportation.save()
     option.save()
 
@@ -52,13 +54,8 @@ def save_drive_options(option: DriveRoute):
 def save_route(route: Route, route_options: List[RouteOption]):
     route.save()
     for opt in route_options:
-        if isinstance(opt, FlightRoute):
-            save_flight_options(opt)
-        elif isinstance(opt, DriveRoute):
-            save_drive_options(opt)
-        else:
-            raise Exception(f'Unknown route option type: {type(opt)}')
-
+        save_route_options(opt)
         route_option = RouteOption(content_object=opt, route=route)
         route_option.save()
     logging.info(f'finished saving route {route}')
+
