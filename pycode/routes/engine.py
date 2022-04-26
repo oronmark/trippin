@@ -150,9 +150,9 @@ class RoutesEngine:
         # cannot run in multithreaded mode for now, should be broken into small tasks per route
         new_locations = tr_db.Location.objects.filter(routes_update_time__isnull=True)
         new_routes = []
-        for new_location in progressbar(new_locations):
+        for new_location in progressbar(new_locations, prefix='new location: '):
             logging.info(f'creating routes for new location {new_location}')
-            for location in progressbar(tr_db.Location.objects.all()):
+            for location in progressbar(tr_db.Location.objects.all(),  prefix='other locations: '):
                 if new_location == location:
                     continue
                 route, route_options = self.create_route(new_location, location)
