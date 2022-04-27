@@ -146,6 +146,7 @@ class RoutesEngine:
     def save_route(route: Route, route_options: List[RouteOption]):
         save_route(route, route_options)
 
+    # TODO: consider not using _RouteWithOptions replace with simpler ds
     def create_new_routes(self) -> List[_RouteWithOptions]:
         # cannot run in multithreaded mode for now, should be broken into small tasks per route
         new_locations = tr_db.Location.objects.filter(routes_update_time__isnull=True)
