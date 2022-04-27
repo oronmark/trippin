@@ -17,20 +17,6 @@ class Coordinates:
     lng: float
 
 
-# def coordinates_decorator(func):
-#     def inner(*args):
-#         def convert_to_coordinates(obj: Any) -> Any:
-#             if isinstance(obj, tr_db.Location):
-#                 return Coordinates(lat=obj.lat, lng=obj.lng)
-#             if isinstance(obj, tr_db.Airport):
-#                 return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
-#             if isinstance(obj, AirportData):
-#                 return Coordinates(lat=obj.latitude_deg, lng=obj.longitude_deg)
-#             return obj
-#         return func(*[convert_to_coordinates(a) for a in args])
-#     return inner
-
-
 def read_from_csv_to_lists(path: Path, encoding: Optional[str] = DEFAULT_ENCODING) -> List[List[Any]]:
     data = []
     with open(path, newline='', encoding=encoding) as file:
@@ -77,23 +63,6 @@ def convert_dict_to_dataclass(data: Dict[Any, Any], class_type,
     return obj
 
 
-# def calculate_distance_on_map(p0: Tuple[float, float], p1: Tuple[float, float]) -> float:
-#     # this function calculates the distance between 2 points on a map in km
-#     # this was implemented explicitly because using the geopy.distance function was very slow
-#     r = 6373.0
-#     lat1 = radians(p0[0])
-#     lon1 = radians(p0[1])
-#     lat2 = radians(p1[0])
-#     lon2 = radians(p1[1])
-#     d_lon = lon2 - lon1
-#     d_lat = lat2 - lat1
-#     a = sin(d_lat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(d_lon / 2) ** 2
-#     c = 2 * atan2(sqrt(a), sqrt(1 - a))
-#     distance = r * c
-#
-#     return distance
-
-
 # @coordinates_decorator
 def calculate_distance_on_map(p0: Coordinates, p1: Coordinates) -> float:
     # this function calculates the distance between 2 points on a map in km
@@ -138,13 +107,13 @@ def sort_attributes(obj, f, attributes):
         setattr(obj, att, val)
 
 
-def write_to_json_from_dicts(data: List[Dict[Any, Any]], path: Path):
-    with open(path, 'w') as fp:
+def write_to_json_from_dicts(data: Dict[Any, Any], path: Path):
+    with open(path, 'w+') as fp:
         json.dump(data, fp)
 
 
-def save_gmaps_result(data: List[Dict[Any, Any]], from_name: str, to_name: str, path: Path = None):
-    results_sub_folder = 'gmaps_directions_results'
-    if not path:
-        path = Path.joinpath(tr_path.get_resources_path(), results_sub_folder, f'{from_name}_to_{to_name}.json')
-    write_to_json_from_dicts(data, path)
+def read_from_json_to_dicts(path: Path) -> Dict[Any, Any]:
+    with open(path) as json_file:
+        return json.load(json_file)
+
+
