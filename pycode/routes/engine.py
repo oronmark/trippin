@@ -4,8 +4,8 @@ import googlemaps
 import django
 import logging
 from progressbar import progressbar
+from datetime import datetime
 django.setup()
-
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
     DriveRoute, BaseRoute, RouteOption
@@ -16,7 +16,7 @@ from .writer import save_route
 from enum import Enum, auto
 from pathlib import Path
 from trippin.pycode.tr_path import tr_path
-
+from collections import defaultdict
 
 # TODO: add error handling, logging and costume exceptions
 # TODO: consider using distance matrix rather the direction
@@ -149,18 +149,25 @@ class RoutesEngine:
     def create_new_routes(self) -> List[_RouteWithOptions]:
         # cannot run in multithreaded mode for now, should be broken into small tasks per route
         new_locations = tr_db.Location.objects.filter(routes_update_time__isnull=True)
+        location_to_other_locations = defaultdict(lambda: set())
         new_routes = []
         for new_location in progressbar(new_locations, prefix='new location: '):
             logging.info(f'creating routes for new location {new_location}')
-            for location in progressbar(tr_db.Location.objects.all(),  prefix='other locations: '):
-                if new_location == location:
+            for other_location in progressbar(Location.objects.all(),  prefix='other locations: '):
+                if new_location == other_location or new_location in location_to_other_locations[other_location]:
                     continue
-                route, route_options = self.create_route(new_location, location)
+                route, route_options = self.create_route(new_location, other_location)
                 new_routes.append(self._RouteWithOptions(route=route, route_options=route_options))
+                location_to_other_locations[new_location].add(other_location)
+                location_to_other_locations[other_location].add(new_location)
         return new_routes
 
     def run_engine(self):
         logging.info('Routes engine is running...')
-        routes = self.create_new_routes()
-        print('afsafs')
-        print('done')
+        route_with_options = self.create_new_routes()
+        for rwo in route_with_options:
+            save_route(rwo.route, rwo.route_options)
+        logging.info('Updating locations update time')
+        Location.objects.update(routes_update_time=datetime.now())
+        logging.info('Routes engine finished successfully')
+

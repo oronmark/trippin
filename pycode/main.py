@@ -153,7 +153,7 @@ def main():
     # route, route_options = routes_engine.create_route(tel_aviv, eilat)
     # routes_engine.save_route(route, route_options)
 
-    routes = routes_engine.create_new_routes()
+    routes = routes_engine.run_engine()
     print('done')
 
 

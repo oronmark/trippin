@@ -3,7 +3,7 @@ from functools import reduce
 import logging
 from django.db.models import Q
 
-from trippin.tr_db import Route, FlightRoute, AirportLocation, DriveRoute, RouteOption
+from trippin.tr_db import Route, FlightRoute, AirportLocation, DriveRoute, RouteOption, BaseRoute
 
 logging.basicConfig(level=logging.INFO)
 from django.db import transaction
@@ -51,7 +51,7 @@ def save_route_options(option: DriveRoute):
 
 # TODO: what to do if route_options is empty
 @transaction.atomic
-def save_route(route: Route, route_options: List[RouteOption]):
+def save_route(route: Route, route_options: List[BaseRoute]):
     route.save()
     for opt in route_options:
         save_route_options(opt)
