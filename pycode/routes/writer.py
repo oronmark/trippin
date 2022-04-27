@@ -11,13 +11,13 @@ from trippin.pycode.tr_utils import TR_ID
 from multipledispatch import dispatch
 
 
-# TODO: change input to flight route and not airport location
 def create_airport_location_query(flight_route: FlightRoute):
     airport_location_queries = [Q(airport_id=al.airport_id, location_id=al.location_id) for al in
                                 flight_route.get_airport_locations()]
     return reduce(lambda alq0, alq1: alq0 | alq1, airport_location_queries)
 
 
+# TODO: fix type hint
 def get_or_create_airport_location(airport_location: AirportLocation,
                                    existing_airport_locations) -> AirportLocation:
     # existing_airport_locations: Dict[(TR_ID, TR_ID), AirportLocation]) -> AirportLocation:
