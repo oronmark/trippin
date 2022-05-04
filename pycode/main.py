@@ -1,5 +1,5 @@
 # THIS IS A SANDBOX
-
+from datetime import date
 from typing import List
 
 import django
@@ -21,14 +21,15 @@ from functools import reduce
 ###########################################################################################
 
 # next session:
-# save gmaps results and use without making an http call (for dev only)
-# add maximal distance to craete drive route for
+# add aspectd to locations
+# create simple trip calculation
+# add maximal distance to create drive route for
 
 # open questions:
-# how can I associate a city with an airport i.e tel aviv->ben gurion airport, new york city-> jfk and newark
 # how can i mark a location as a reasonable place to reach an airport from
 # removed duplicated iata_code from airports csv. should it be enough or should the key be id (for future files)
 # how should models of pairs of same model should be handled to avoid repetition?
+# currently updated tlv airport destinations manually (change eilat to ramon), t.b.d
 
 # TODOS:
 # use distance matrix to eliminate places where you cant go by road
@@ -48,6 +49,49 @@ from functools import reduce
 ###########################################################################################
 ###########################################################################################
 
+def create_interests():
+    # athens
+    athens = tr_db.Location.objects.filter(name='Athens').get()
+    history = tr_db.Interest.objects.create(location=athens, aspect=tr_db.Interest.Aspect.HISTORY, score=90)
+    public_transportation = tr_db.Interest.objects.create(location=athens,
+                                                          aspect=tr_db.Interest.Aspect.PUBLIC_TRANSPORTATION,
+                                                          score=100)
+    beach = tr_db.Interest.objects.create(location=athens, aspect=tr_db.Interest.Aspect.BEACH,
+                                          score=40, start_date=date(date.today().year, 4, 15),
+                                          end_date=date(date.today().year, 11, 1))
+    local_culinary = tr_db.Interest.objects.create(location=athens, aspect=tr_db.Interest.Aspect.LOCAL_CULINARY,
+                                                   score=100)
+
+    # agios_ioannis
+    agios_ioannis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
+    beach = tr_db.Interest.objects.create(location=agios_ioannis, aspect=tr_db.Interest.Aspect.BEACH,
+                                          score=100, start_date=date(date.today().year, 4, 15),
+                                          end_date=date(date.today().year, 11, 1))
+    hiking = tr_db.Interest.objects.create(location=agios_ioannis, aspect=tr_db.Interest.Aspect.HIKING,
+                                           score=20, start_date=date(date.today().year, 4, 15),
+                                           end_date=date(date.today().year, 11, 1))
+
+    # zagorochoria
+    zagorochoria = tr_db.Location.objects.filter(name='Zaguri').get()
+    rappelling_canyoning_rafting = tr_db.Interest.objects.create(location=zagorochoria,
+                                                                 aspect=tr_db.Interest.Aspect.RAFTING_CANYONING_RAPPELLING,
+                                                                 score=100, start_date=date(date.today().year, 4, 15),
+                                                                 end_date=date(date.today().year, 11, 1))
+
+    # litochoro
+    litochoro = tr_db.Location.objects.filter(name='Litochoro').get()
+    hiking = tr_db.Interest.objects.create(location=litochoro, aspect=tr_db.Interest.Aspect.HIKING,
+                                           score=70, start_date=date(date.today().year, 4, 15),
+                                           end_date=date(date.today().year, 11, 1))
+    trekking = tr_db.Interest.objects.create(location=litochoro, aspect=tr_db.Interest.Aspect.TREKKING,
+                                             score=100, start_date=date(date.today().year, 4, 15),
+                                             end_date=date(date.today().year, 11, 1))
+
+
+def delete_interests():
+    tr_db.Interest.objects.all().delete()
+
+
 def create_locations():
     thessaloniki = tr_db.Location(place_id='ChIJ7eAoFPQ4qBQRqXTVuBXnugk', lng=22.9900712, lat=40.6560448, country='GR',
                                   name='Thessaloniki')
@@ -65,8 +109,8 @@ def create_locations():
     new_york = tr_db.Location(place_id='ChIJOwg_06VPwokRYv534QaPC8g', lng=-74.0059728, lat=40.7127753, country='US',
                               name='New York')
     eilat = tr_db.Location(place_id='ChIJC155JONxABUR2_Z3VfiVHf4', lng=35.0087689, lat=29.7630079,
-                              country='IL',
-                              name='Eilat')
+                           country='IL',
+                           name='Eilat')
     thessaloniki.save()
     tel_aviv.save()
     athens.save()
@@ -149,15 +193,13 @@ def main():
     # # route, route_options = routes_engine.create_route(tel_aviv, new_york)
     # # routes_engine.save_route(route, route_options)
     #
-    # # TODO: check why ramon airpot is not part of the answers
     # route, route_options = routes_engine.create_route(tel_aviv, eilat)
     # routes_engine.save_route(route, route_options)
 
-    routes = routes_engine.run_engine()
+    # routes = routes_engine.run_engine()
+    # create_interests()
     print('done')
 
 
 if __name__ == '__main__':
     main()
-
-
