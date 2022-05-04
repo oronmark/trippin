@@ -4,19 +4,25 @@ from .base_models import BaseModel, Coordinates
 from django.db import models
 
 
-class UserLocation(BaseModel, Coordinates):
+class GeneralLocation(BaseModel, Coordinates):
+    def __str__(self):
+        return self.name if self.name else Coordinates.__str__(self)
+
+    class Meta:
+        abstract = True
+
+
+class UserLocation(GeneralLocation):
     pass
 
 
+# TODO !!! expand general_location and remove str
 # TODO: add fields- country, region (perhaps enrich with maps api)
 # TODO: consider removing routes update time
-class Location(UserLocation):
+class Location(GeneralLocation):
     place_id = models.CharField(max_length=255, null=True, unique=True)
     country = models.CharField(null=False, max_length=2)
     routes_update_time = models.DateTimeField(default=None, null=True)
-
-    def __str__(self):
-        return self.name
 
 
 # TODO: add activity, theme (specific activity like harry potter)

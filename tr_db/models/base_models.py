@@ -14,3 +14,6 @@ class Coordinates(models.Model):
 
     class Meta:
         abstract = True
+
+    def __str__(self):
+        return f'({self.lat},{self.lng})'

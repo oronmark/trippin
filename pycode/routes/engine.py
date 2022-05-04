@@ -8,7 +8,7 @@ from datetime import datetime
 django.setup()
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute, BaseRoute, RouteOption
+    DriveRoute, BaseRoute, RouteOption, GeneralLocation, UserLocation
 from trippin.pycode import tr_utils
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
@@ -107,30 +107,6 @@ class RoutesEngine:
 
         return [AirportLocation(airport=airport, location=location, transportation=t)
                 for t in transportations]
-
-    def create_route_option_flight(self, route: Route) -> List[FlightRoute]:
-
-        connected_airports = self._airports_dao.get_airport_connections(route.location_0, route.location_1)
-        flight_routes = []
-        for c in connected_airports:
-            airport_location_options_0 = self.create_airport_location(airport=c.airport_0,
-                                                                      location=route.location_0)
-
-            airport_location_options_1 = self.create_airport_location(airport=c.airport_1,
-                                                                      location=route.location_1)
-
-            if not airport_location_options_0 or not airport_location_options_1:
-                logging.info(f'Unable to calculate transportation from for airport, location for '
-                             f'({c.airport_0}, {route.location_0.name}) or ({c.airport_1}, {route.location_1.name})')
-                continue
-
-            transportation = tr_db.Transportation(distance=c.distance, duration=c.duration,
-                                                  legs=c.legs, type=Transportation.Type.FLIGHT)
-
-            flight_routes.append(FlightRoute(airport_location_0=airport_location_options_0[0],
-                                             airport_location_1=airport_location_options_1[0],
-                                             transportation=transportation))
-        return flight_routes
 
     def create_route_options(self, route: Route) -> List[BaseRoute]:
         flight_routes = self.create_route_option_flight(route)
