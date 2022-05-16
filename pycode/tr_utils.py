@@ -4,7 +4,9 @@ from typing import Any, List, Optional, Dict, Callable
 import csv
 from math import sin, cos, sqrt, atan2, radians
 import json
-from trippin.pycode.tr_path import tr_path
+
+from trippin import tr_db
+from django.db import transaction
 
 DEFAULT_ENCODING = 'UTF-8'
 DEFAULT_BATCH_SIZE = 500
@@ -117,3 +119,8 @@ def read_from_json_to_dicts(path: Path) -> Dict[Any, Any]:
         return json.load(json_file)
 
 
+# @transaction.atomic()
+# def write_location(location: tr_db.GeneralLocation):
+#     location.save()
+#     location_content = tr_db.LocationContent(content_object=location)
+#     location_content.save()

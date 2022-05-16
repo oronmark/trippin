@@ -2,6 +2,14 @@ from datetime import date
 from importlib.resources import _
 from .base_models import BaseModel, Coordinates
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+
+
+class LocationContent(models.Model):
+    content_object = GenericForeignKey()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
 
 
 class GeneralLocation(BaseModel, Coordinates):
@@ -10,6 +18,11 @@ class GeneralLocation(BaseModel, Coordinates):
 
     class Meta:
         abstract = True
+
+    # def save(self, *args, **kwargs):
+    #     super(GeneralLocation, self).save(*args, **kwargs)
+    #     location_content = LocationContent(content_object=self)
+    #     location_content.save()
 
 
 class UserLocation(GeneralLocation):
@@ -23,6 +36,7 @@ class Location(GeneralLocation):
     place_id = models.CharField(max_length=255, null=True, unique=True)
     country = models.CharField(null=False, max_length=2)
     routes_update_time = models.DateTimeField(default=None, null=True)
+    location_content = GenericRelation(LocationContent)
 
 
 # TODO: add activity, theme (specific activity like harry potter)

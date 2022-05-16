@@ -2,7 +2,7 @@ from typing import List
 
 from .base_models import BaseModel
 from django.db import models
-from .locations import Location, GeneralLocation
+from .locations import Location, GeneralLocation, LocationContent
 from .airports import Airport
 from trippin.pycode.tr_utils import sort_attributes
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -13,8 +13,8 @@ from django.contrib.contenttypes.models import ContentType
 # TODO: add mixed transportation type (i.e driving and transit)
 # TODO: fix nullable fields
 class Route(BaseModel):
-    location_0 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_0')
-    location_1 = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location_1')
+    location_0 = models.ForeignKey(LocationContent, on_delete=models.CASCADE, null=False, related_name='location_0')
+    location_1 = models.ForeignKey(LocationContent, on_delete=models.CASCADE, null=False, related_name='location_1')
 
     class Meta:
         unique_together = [('location_0', 'location_1')]
@@ -25,7 +25,7 @@ class Route(BaseModel):
         super(Route, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f'location_0={self.location_0.name}, location_1={self.location_1.name}'
+        return f'location_0={self.location_0.content_object.name}, location_1={self.location_1.content_object.name}'
 
 
 class Transportation(BaseModel):
@@ -47,7 +47,7 @@ class Transportation(BaseModel):
 # TODO: rename
 class AirportLocation(BaseModel):
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE, null=False, related_name='airport')
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=False, related_name='location')
+    location = models.ForeignKey(LocationContent, on_delete=models.CASCADE, null=False, related_name='location')
     transportation = models.OneToOneField(Transportation, on_delete=models.CASCADE, null=False,
                                           related_name='transportation')
 
@@ -55,7 +55,7 @@ class AirportLocation(BaseModel):
         unique_together = [('airport', 'location')]
 
     def __str__(self):
-        return f'airport={self.airport.iata_code}, location={self.location.name}'
+        return f'airport={self.airport.iata_code}, location={self.location.content_object.name}'
 
 
 class RouteOption(models.Model):
@@ -90,8 +90,8 @@ class FlightRoute(BaseRoute):
                         ['airport_location_0', 'airport_location_1'])
         super(FlightRoute, self).save(*args, **kwargs)
 
-    def get_airport_locations(self) -> List[AirportLocation]:
-        return [self.airport_location_0, self.airport_location_1]
+    # def get_airport_locations(self) -> List[AirportLocation]:
+    #     return [self.airport_location_0, self.airport_location_1]
 
 
 class DriveRoute(BaseRoute):

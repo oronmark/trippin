@@ -49,11 +49,11 @@ class TripRequest:
 
 
     def calc_starting_point_to_dest_country(self):
-
+        pass
 
 
     # first arrive to dest country with starting point
     # get all locations with any of the aspects (with equal or more for each of the aspects?)
     # create a greedy algorithm and try to answer each of the aspects
-    def calc_trips(self) -> List[tr_db.Trip]:
-        total_days = self.end_date - self.start_date
+    # def calc_trips(self) -> List[tr_db.Trip]:
+    #     total_days = self.end_date - self.start_date
