@@ -10,7 +10,7 @@ from datetime import datetime
 django.setup()
 from trippin import tr_db
 from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute, BaseRoute, RouteOption, GeneralLocation, UserLocation
+    DriveRoute, BaseRoute, RouteContent, GeneralLocation, UserLocation
 from trippin.pycode import tr_utils
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
@@ -49,8 +49,8 @@ class RoutesEngine:
 
     @dataclasses.dataclass
     class _RouteWithOptions:
-        route: tr_db.Route
-        route_options: List[tr_db.BaseRoute]
+        route: RouteData
+        route_options: List[BaseRouteData]
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO,
                  gmaps_mode: GmapsMode = GmapsMode.LOCAL_READ):
@@ -140,15 +140,14 @@ class RoutesEngine:
         drive_routes = self.create_route_option_driving(location_0, location_1)
         return flight_routes + drive_routes
 
-    def create_route(self, location_0: GeneralLocation, location_1: GeneralLocation) -> (Route, List[BaseRoute]):
+    def create_route(self, location_0: GeneralLocation, location_1: GeneralLocation) -> (RouteData, List[BaseRouteData]):
         logging.info(f'creating route for locations locations_0: {location_0}, locations_1: {location_1}')
         route_options = self.create_route_options(location_0, location_1)
-        new_route = tr_db.Route(location_0=tr_db.LocationContent(content_object=location_0),
-                                location_1=tr_db.LocationContent(content_object=location_1))
+        new_route = RouteData(location_0=location_0, location_1=location_1)
         return new_route, route_options
 
     @staticmethod
-    def save_route(route: Route, route_options: List[RouteOption]):
+    def save_route(route: RouteData, route_options: List[BaseRouteData]):
         save_route(route, route_options)
 
     # TODO: consider not using _RouteWithOptions replace with simpler ds

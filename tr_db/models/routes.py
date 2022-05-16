@@ -21,7 +21,7 @@ class Route(BaseModel):
 
     # sorting the attributes makes the unique_together constraint symmetrical
     def save(self, *args, **kwargs):
-        sort_attributes(self, lambda l: l.place_id, ['location_0', 'location_1'])
+        sort_attributes(self, lambda l: l.id, ['location_0', 'location_1'])
         super(Route, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -58,7 +58,7 @@ class AirportLocation(BaseModel):
         return f'airport={self.airport.iata_code}, location={self.location.content_object.name}'
 
 
-class RouteOption(models.Model):
+class RouteContent(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, null=False, related_name='route_options')
 
     content_object = GenericForeignKey()
@@ -86,7 +86,7 @@ class FlightRoute(BaseRoute):
         unique_together = [('airport_location_0', 'airport_location_1')]
 
     def save(self, *args, **kwargs):
-        sort_attributes(self, lambda al: (al.airport.iata_code, al.location.place_id),
+        sort_attributes(self, lambda al: (al.airport.iata_code, al.location.content_object.place_id),
                         ['airport_location_0', 'airport_location_1'])
         super(FlightRoute, self).save(*args, **kwargs)
 

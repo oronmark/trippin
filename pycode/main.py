@@ -158,7 +158,7 @@ def delete_db():
     tr_db.FlightRoute.objects.all().delete()
     tr_db.DriveRoute.objects.all().delete()
     tr_db.Route.objects.all().delete()
-    tr_db.RouteOption.objects.all().delete()
+    tr_db.RouteContent.objects.all().delete()
 
 
 # TODO: change input to flight route and not airport location

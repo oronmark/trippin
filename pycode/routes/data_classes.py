@@ -8,7 +8,9 @@ from trippin.tr_db import Transportation, Airport, GeneralLocation
 class RouteData:
     location_0: GeneralLocation
     location_1: GeneralLocation
-    transportation: Transportation
+
+
+# transportation: Transportation
 
 
 @dataclasses.dataclass
