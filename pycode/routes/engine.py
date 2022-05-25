@@ -1,5 +1,3 @@
-import dataclasses
-from abc import ABC
 from typing import List, Dict, Any
 import googlemaps
 import django
@@ -9,8 +7,7 @@ from datetime import datetime
 
 django.setup()
 from trippin import tr_db
-from trippin.tr_db import Location, Route, Transportation, Airport, FlightRoute, AirportLocation, \
-    DriveRoute, BaseRoute, RouteContent, GeneralLocation, UserLocation
+from trippin.tr_db import Location, Route
 from trippin.pycode import tr_utils
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
@@ -46,11 +43,6 @@ class RoutesEngine:
 
         def is_local_write(self) -> bool:
             return self == self.LOCAL_WRITE or self == self.FULLY_LOCAL
-
-    @dataclasses.dataclass
-    class _RouteWithOptions:
-        route: RouteData
-        route_options: List[BaseRouteData]
 
     def __init__(self, gmaps_client: googlemaps.Client, airports_dao: AirportsDAO,
                  gmaps_mode: GmapsMode = GmapsMode.LOCAL_READ):
@@ -104,7 +96,8 @@ class RoutesEngine:
         return [AirportLocationData(airport=airport, location=location, transportation=t)
                 for t in transportations]
 
-    def create_route_option_flight(self, location_0: GeneralLocation, location_1: GeneralLocation) -> List[FlightRouteData]:
+    def create_route_option_flight(self, location_0: GeneralLocation, location_1: GeneralLocation) -> List[
+        FlightRouteData]:
 
         connected_airports = self._airports_dao.get_airport_connections(location_0, location_1)
         flight_routes = []
@@ -127,7 +120,8 @@ class RoutesEngine:
         return flight_routes
 
     # TODO: add constraints to enable only viable routes (remove very long distance etc)
-    def create_route_option_driving(self, location_0: GeneralLocation, location_1: GeneralLocation) -> List[DriveRouteData]:
+    def create_route_option_driving(self, location_0: GeneralLocation, location_1: GeneralLocation) -> List[
+        DriveRouteData]:
         transportations = self._create_gmaps_transportations(location_0, location_1, Transportation.Type.DRIVING)
         return [DriveRouteData(transportation=t) for t in transportations]
 
@@ -140,18 +134,24 @@ class RoutesEngine:
         drive_routes = self.create_route_option_driving(location_0, location_1)
         return flight_routes + drive_routes
 
-    def create_route(self, location_0: GeneralLocation, location_1: GeneralLocation) -> (RouteData, List[BaseRouteData]):
+    def create_route(self, location_0: GeneralLocation, location_1: GeneralLocation) -> (
+            RouteData, List[BaseRouteData]):
         logging.info(f'creating route for locations locations_0: {location_0}, locations_1: {location_1}')
         route_options = self.create_route_options(location_0, location_1)
         new_route = RouteData(location_0=location_0, location_1=location_1)
         return new_route, route_options
+
+    # TODO: unify with 'create_route' and generalize
+    def create_route_with_options(self, location_0: GeneralLocation, location_1: GeneralLocation) -> RouteWithOptions:
+        route, options = self.create_route(location_0, location_1)
+        return RouteWithOptions(route=route, route_options=options)
 
     @staticmethod
     def save_route(route: RouteData, route_options: List[BaseRouteData]):
         save_route(route, route_options)
 
     # TODO: consider not using _RouteWithOptions replace with simpler ds
-    def create_new_routes(self) -> List[_RouteWithOptions]:
+    def create_new_routes(self) -> List[RouteWithOptions]:
         # cannot run in multithreaded mode for now, should be broken into small tasks per route
         new_locations = tr_db.Location.objects.filter(routes_update_time__isnull=True)
         location_to_other_locations = defaultdict(lambda: set())
@@ -162,7 +162,7 @@ class RoutesEngine:
                 if new_location == other_location or new_location in location_to_other_locations[other_location]:
                     continue
                 route, route_options = self.create_route(new_location, other_location)
-                new_routes.append(self._RouteWithOptions(route=route, route_options=route_options))
+                new_routes.append(self.RouteWithOptions(route=route, route_options=route_options))
                 location_to_other_locations[new_location].add(other_location)
                 location_to_other_locations[other_location].add(new_location)
         return new_routes

@@ -34,3 +34,9 @@ class FlightRouteData(BaseRouteData):
 @dataclasses.dataclass
 class DriveRouteData(BaseRouteData):
     pass
+
+
+@dataclasses.dataclass
+class RouteWithOptions:
+    route: RouteData
+    route_options: List[BaseRouteData]

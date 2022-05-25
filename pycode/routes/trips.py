@@ -2,9 +2,10 @@ import dataclasses
 import datetime
 from typing import List, Optional
 
-from pycode.routes.engine import RoutesEngine
+from .engine import RoutesEngine
 from pycode.tr_utils import Coordinates
 from trippin import tr_db
+from .data_classes import *
 
 
 class TripEngine:
@@ -35,7 +36,8 @@ class TripRequest:
 
     def __init__(self, aspects: List[AspectData], src_country: Optional[str], dest_country: str,
                  days: Optional[int], start_date: datetime.date, end_date: datetime.date,
-                 soft_range_days: Optional[int], starting_location: Coordinates,
+                 soft_range_days: Optional[int], src_point: Coordinates, dest_point: Coordinates,
+                 dest_location: tr_db.Location,
                  transportation_type: List[tr_db.Transportation.type], seasons: Optional[str],
                  routes_engine: RoutesEngine):
         self.aspects = aspects  # for now, assume sum of capacity is 100
@@ -45,11 +47,15 @@ class TripRequest:
         self.end_date = end_date
         self.transportation_type = transportation_type
         self.max_transportation = 3  # hours
-        self.starting_location = starting_location
+        self.src_point = src_point
+        self.dest_point = dest_point
+        self.route_engine = routes_engine
+        self.dest_location = dest_location # currently insert manually
 
-
-    def calc_starting_point_to_dest_country(self):
-        pass
+    # TODO: construct user location in some other way (implicitly)
+    def calc_starting_point_to_dest_point(self):
+        src_location = tr_db.UserLocation(lat=self.src_point.lat, lng=self.src_point.lng)
+        route_with_options: RouteWithOptions = self.route_engine.create_route(src_location, self.dest_location)
 
 
     # first arrive to dest country with starting point
