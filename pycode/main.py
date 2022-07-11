@@ -186,17 +186,17 @@ def main():
     # route, route_options = routes_engine.create_route(tel_aviv, eilat)
     # routes_engine.save_route(route, route_options)
 
-    gmaps = googlemaps.Client(key=os.environ['API_KEY'])
-    amadeus = Client(
-        client_id=os.environ['AMADEUS_API_KEY'],
-        client_secret=os.environ['AMADEUS_API_SECRET'],
-        hostname='test'
-    )
-
-    airports_dao = AirportsDAO(amadeus_client=amadeus)
-    routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
-    routes_engine.run_engine()
-   # create_interests()
+    # gmaps = googlemaps.Client(key=os.environ['API_KEY'])
+    # amadeus = Client(
+    #     client_id=os.environ['AMADEUS_API_KEY'],
+    #     client_secret=os.environ['AMADEUS_API_SECRET'],
+    #     hostname='test'
+    # )
+    #
+    # airports_dao = AirportsDAO(amadeus_client=amadeus)
+    # routes_engine = RoutesEngine(gmaps_client=gmaps, airports_dao=airports_dao)
+    # routes_engine.run_engine()
+    create_interests()
     print('done')
 
 

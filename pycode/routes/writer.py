@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 from django.db import transaction
 from trippin.pycode.tr_utils import TR_ID
 from multipledispatch import dispatch
-from .data_classes import *
+from data_classes import *
 
 
 def create_airport_location_query(flight_route_data: FlightRouteData):

@@ -38,6 +38,6 @@ class DriveRouteData(BaseRouteData):
 
 
 @dataclasses.dataclass
-class RouteWithOptions:
+class RouteWithOptionsData:
     route: RouteData
     route_options: List[BaseRouteData]

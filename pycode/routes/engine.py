@@ -11,12 +11,12 @@ from trippin.tr_db import Location, Route
 from trippin.pycode import tr_utils
 from pycode.airports.airports import AirportsDAO
 from pycode.tr_utils import Coordinates
-from .writer import save_route
+from writer import save_route
 from enum import Enum, auto
 from pathlib import Path
 from trippin.pycode.tr_path import tr_path
 from collections import defaultdict
-from .data_classes import *
+from data_classes import *
 
 
 # TODO: add error handling, logging and costume exceptions
@@ -142,16 +142,16 @@ class RoutesEngine:
         return new_route, route_options
 
     # TODO: unify with 'create_route' and generalize
-    def create_route_with_options(self, location_0: GeneralLocation, location_1: GeneralLocation) -> RouteWithOptions:
+    def route_with_options(self, location_0: GeneralLocation, location_1: GeneralLocation) -> RouteWithOptionsData:
         route, options = self.create_route(location_0, location_1)
-        return RouteWithOptions(route=route, route_options=options)
+        return RouteWithOptionsData(route=route, route_options=options)
 
     @staticmethod
     def save_route(route: RouteData, route_options: List[BaseRouteData]):
         save_route(route, route_options)
 
     # TODO: consider not using _RouteWithOptions replace with simpler ds
-    def create_new_routes(self) -> List[RouteWithOptions]:
+    def create_new_routes(self) -> List[RouteWithOptionsData]:
         # cannot run in multithreaded mode for now, should be broken into small tasks per route
         new_locations = tr_db.Location.objects.filter(routes_update_time__isnull=True)
         location_to_other_locations = defaultdict(lambda: set())
@@ -162,7 +162,7 @@ class RoutesEngine:
                 if new_location == other_location or new_location in location_to_other_locations[other_location]:
                     continue
                 route, route_options = self.create_route(new_location, other_location)
-                new_routes.append(RouteWithOptions(route=route, route_options=route_options))
+                new_routes.append(RouteWithOptionsData(route=route, route_options=route_options))
                 location_to_other_locations[new_location].add(other_location)
                 location_to_other_locations[other_location].add(new_location)
         return new_routes
