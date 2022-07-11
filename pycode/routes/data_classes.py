@@ -1,5 +1,6 @@
 import dataclasses
 from abc import ABC
+from typing import List
 
 from trippin.tr_db import Transportation, Airport, GeneralLocation
 

@@ -162,7 +162,7 @@ class RoutesEngine:
                 if new_location == other_location or new_location in location_to_other_locations[other_location]:
                     continue
                 route, route_options = self.create_route(new_location, other_location)
-                new_routes.append(self.RouteWithOptions(route=route, route_options=route_options))
+                new_routes.append(RouteWithOptions(route=route, route_options=route_options))
                 location_to_other_locations[new_location].add(other_location)
                 location_to_other_locations[other_location].add(new_location)
         return new_routes

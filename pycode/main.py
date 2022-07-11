@@ -171,18 +171,18 @@ def main():
     # populate_airports_db()
     # create_locations()
     # create_airport_connections(['TLV', 'JFK', 'EWR', 'LAS', 'ATH', 'SKG'])
-    # delete_db()
+    # # delete_db()
     # create_manual_airport_connection('TLV', 'ETM')
     # tel_aviv = tr_db.Location.objects.filter(name='Tel-aviv').get()
     # new_york = tr_db.Location.objects.filter(name='New York').get()
     # athens = tr_db.Location.objects.filter(name='Athens').get()
     # agios_ionnis = tr_db.Location.objects.filter(name='Agios Ioannis').get()
     # eilat = tr_db.Location.objects.filter(name='Eilat').get()
-    #
-    # # route, route_options = routes_engine.create_route(athens, agios_ionnis)
-    # # route, route_options = routes_engine.create_route(tel_aviv, new_york)
-    # # routes_engine.save_route(route, route_options)
-    #
+
+    # route, route_options = routes_engine.create_route(athens, agios_ionnis)
+    # route, route_options = routes_engine.create_route(tel_aviv, new_york)
+    # routes_engine.save_route(route, route_options)
+
     # route, route_options = routes_engine.create_route(tel_aviv, eilat)
     # routes_engine.save_route(route, route_options)
 
